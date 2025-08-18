@@ -2,162 +2,146 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JK Trading Hub — Trade</title>
+  <title>JK Trading Hub — Market</title>
   <style>
-    :root{--bg:#0e0e0e;--card:#161616;--text:#f3f3f3;--muted:#9aa0a6;--line:#222}
+    :root{--bg:#0e0e0e;--card:#151515;--line:#232323;--text:#f2f2f2;--muted:#9aa0a6;--green:#17c964;--red:#f31260}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-    /* Navbar */
     .nav{position:sticky;top:0;background:#111;border-bottom:1px solid var(--line);display:flex;gap:6px;padding:10px 12px;z-index:9}
     .nav a{color:#ddd;text-decoration:none;padding:10px 12px;border-radius:8px}
     .nav a:hover,.nav a.active{background:#1f1f1f;color:#fff}
-    /* Layout */
-    .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-    h1{margin:0 0 8px} .muted{color:var(--muted)}
-    /* Controls */
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-    .btn{background:#1f1f1f;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
-    .btn.active{background:#fff;color:#000;border-color:#fff}
-    .spacer{height:8px}
-    /* Chart holder */
-    #chartWrap{height:520px}
-    @media (max-width:640px){ #chartWrap{height:440px} }
+    .wrap{max-width:1100px;margin:18px auto;padding:0 14px}
+    h1{margin:0 0 12px}
+    .table{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+    .head,.row{display:grid;grid-template-columns:140px 110px 1fr 90px;gap:10px;align-items:center}
+    .head{background:#101010;color:#bbb;font-weight:600}
+    .head div,.row div{padding:12px 14px}
+    .row{border-top:1px solid var(--line);cursor:pointer}
+    .row:hover{background:#1a1a1a}
+    .sym{display:flex;align-items:center;gap:10px;font-weight:600}
+    .chg.pos{color:var(--green)} .chg.neg{color:var(--red)}
+    .pill{display:inline-block;min-width:78px;padding:6px 10px;border-radius:999px;text-align:right;font-variant-numeric:tabular-nums}
+    .pill.green{background:#0e2f1f;color:#8dffbf} .pill.red{background:#311017;color:#ff9db9}
+    .muted{color:var(--muted)}
+    .chartbox{height:52px}
+    @media (max-width:700px){
+      .head,.row{grid-template-columns:120px 90px 1fr 78px}
+      .pill{min-width:68px}
+    }
   </style>
 </head>
 <body>
-  <!-- NAVBAR (same across pages) -->
+  <!-- NAV -->
   <nav class="nav">
     <a href="index.html">Home</a>
-    <a class="active" href="trade.html">Trade</a>
-    <a href="market.html">Market</a>
+    <a class="active" href="market.html">Market</a>
+    <a href="trade.html">Trade</a>
     <a href="discover.html">Discover</a>
     <a href="account.html">Account</a>
   </nav>
 
   <main class="wrap">
-    <div class="card">
-      <div class="row">
-        <h1 id="title" style="margin-right:auto">BTC/USDT</h1>
-        <span class="muted" id="live">—</span>
+    <h1>Market</h1>
+    <div class="table" id="marketTable">
+      <div class="head">
+        <div>Instrument</div>
+        <div class="muted">Change</div>
+        <div class="muted">Chart (15m)</div>
+        <div class="muted">Last</div>
       </div>
-
-      <!-- Symbol buttons -->
-      <div class="row" id="symbols">
-        <button class="btn active" data-sym="BINANCE:BTCUSDT">BTC/USDT</button>
-        <button class="btn" data-sym="BINANCE:ETHUSDT">ETH/USDT</button>
-        <button class="btn" data-sym="BINANCE:SOLUSDT">SOL/USDT</button>
-        <button class="btn" data-sym="BINANCE:XRPUSDT">XRP/USDT</button>
-      </div>
-
-      <!-- Timeframe buttons -->
-      <div class="row" id="tfs">
-        <button class="btn" data-tf="1">1m</button>
-        <button class="btn" data-tf="5">5m</button>
-        <button class="btn active" data-tf="15">15m</button>
-        <button class="btn" data-tf="60">1h</button>
-        <button class="btn" data-tf="240">4h</button>
-      </div>
-
-      <!-- Chart container -->
-      <div id="chartWrap" class="card" style="padding:0;margin-top:8px">
-        <div id="tv" style="height:100%;"></div>
-      </div>
-
-      <div class="spacer"></div>
-      <div class="muted">Tip: buttons se coin/interval badal sakte ho. Chart TradingView ka live data use karta hai.</div>
+      <!-- rows will be injected -->
     </div>
+    <p class="muted" style="margin-top:10px">Prices & sparklines from Binance (15m, ~last 100 candles). Tap any row to open full chart on Trade page.</p>
   </main>
 
-  <!-- TradingView library -->
-  <script src="https://s3.tradingview.com/tv.js"></script>
+  <!-- Lightweight Charts for mini sparklines -->
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script>
-    // State
-    let tvWidget = null;
-    const state = { sym: 'BINANCE:BTCUSDT', tf: '15' };
+    const symbols = [
+      'BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT',
+      'DOGEUSDT','TRXUSDT','ADAUSDT','ETCUSDT'
+    ];
+    const tbl = document.getElementById('marketTable');
 
-    const $ = s => document.querySelector(s);
-    const $$ = s => document.querySelectorAll(s);
+    // Create one row DOM
+    function createRow(sym){
+      const row = document.createElement('div');
+      row.className='row';
+      row.dataset.sym=sym;
 
-    // Mount / remount TradingView
-    function mountChart(){
-      // Clear previous chart
-      $('#tv').innerHTML = '';
-      // Create new widget
-      tvWidget = new TradingView.widget({
-        autosize: true,
-        container_id: 'tv',
-        symbol: state.sym,
-        interval: state.tf,
-        timezone: "Etc/UTC",
-        theme: "dark",
-        style: "1",
-        locale: "en",
-        withdateranges: true,
-        hide_side_toolbar: false,
-        allow_symbol_change: false
-      });
-      // Update title text
-      $('#title').textContent = state.sym.replace('BINANCE:','').replace('USDT','/USDT');
-      // Start live price updater
-      startLivePrice();
+      const c1 = document.createElement('div'); c1.className='sym'; c1.textContent = sym.replace('USDT','/USDT');
+      const c2 = document.createElement('div'); c2.innerHTML = `<span class="pill muted">--</span>`;
+      const c3 = document.createElement('div'); c3.className='chartbox'; // sparkline container
+      const c4 = document.createElement('div'); c4.innerHTML = `<span class="pill muted" style="text-align:right">--</span>`;
+
+      row.append(c1,c2,c3,c4);
+
+      // click -> open trade page with hash (persists symbol)
+      row.addEventListener('click',()=>location.href=`trade.html#${sym}`);
+
+      tbl.appendChild(row);
+      return {row, c1, c2, c3, c4};
     }
 
-    // Live price (Binance ticker/price)
-    let priceTimer = null;
-    async function fetchPrice(sym){
-      const s = sym.replace('BINANCE:','');
-      try{
-        const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
-        const d = await r.json();
-        return Number(d.price);
-      }catch(e){ return null; }
+    // Fetch helpers
+    async function getTicker24h(sym){
+      const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}`);
+      if(!r.ok) throw new Error('ticker failed');
+      return r.json();
     }
-    function startLivePrice(){
-      if(priceTimer) clearInterval(priceTimer);
-      priceTimer = setInterval(async ()=>{
-        const px = await fetchPrice(state.sym);
-        if(px){ $('#live').textContent = px.toFixed(2); }
-      }, 4000);
+    async function getKlines(sym, interval='15m', limit=100){
+      const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=${limit}`);
+      if(!r.ok) throw new Error('klines failed');
+      return r.json();
     }
 
-    // Wire symbol buttons
-    $$('#symbols .btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        $$('#symbols .btn').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        state.sym = btn.dataset.sym;
-        mountChart();
+    // Mini chart render
+    function renderSpark(container, data){
+      const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout:{background: { type: 'solid', color: 'transparent' }, textColor:'#9aa0a6'},
+        rightPriceScale:{visible:false}, timeScale:{visible:false}, grid:{vertLines:{visible:false}, horzLines:{visible:false}},
+        crosshair:{visible:false}
       });
-    });
-
-    // Wire timeframe buttons
-    $$('#tfs .btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        $$('#tfs .btn').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        state.tf = btn.dataset.tf;
-        mountChart();
+      const series = chart.addAreaSeries({
+        lineColor:'#12b886', topColor:'rgba(18,184,134,0.35)', bottomColor:'rgba(18,184,134,0.05)'
       });
-    });
+      series.setData(data);
+      // auto-resize
+      new ResizeObserver(() => chart.applyOptions({ width: container.clientWidth })).observe(container);
+      return chart;
+    }
 
-    // Support deep link via hash: trade.html#ETHUSDT or #BTCUSDT, etc.
-    function applyHash(){
-      const raw = (location.hash || '').replace('#','').toUpperCase();
-      if(raw && /USDT$/.test(raw)){
-        // Try to match one of our buttons
-        const symFull = 'BINANCE:'+raw;
-        const targetBtn = Array.from($$('#symbols .btn')).find(b => b.dataset.sym === symFull);
-        if(targetBtn){
-          $$('#symbols .btn').forEach(b=>b.classList.remove('active'));
-          targetBtn.classList.add('active');
-          state.sym = symFull;
+    // Populate all rows
+    (async function init(){
+      for(const sym of symbols){
+        const {row, c2, c3, c4} = createRow(sym);
+
+        // parallel fetch
+        try{
+          const [tkr, kl] = await Promise.all([getTicker24h(sym), getKlines(sym,'15m',100)]);
+
+          // price & change
+          const last = Number(tkr.lastPrice);
+          const chg = Number(tkr.priceChangePercent);
+          const pillLast = c4.querySelector('.pill');
+          const pillChg = c2.querySelector('.pill');
+
+          pillLast.textContent = last.toFixed(2);
+          pillLast.classList.remove('muted'); pillLast.classList.add(chg>=0?'green':'red');
+
+          pillChg.textContent = (chg>=0?'+':'') + chg.toFixed(2) + '%';
+          pillChg.classList.remove('muted'); pillChg.classList.add(chg>=0?'green':'red');
+
+          // sparkline data
+          const data = kl.map(k => ({ time: Math.floor(k[0]/1000), value: Number(k[4]) }));
+          renderSpark(c3, data);
+        }catch(e){
+          c3.innerHTML = '<span class="muted">data error</span>';
+          console.error(sym, e);
         }
       }
-    }
-
-    // Init
-    applyHash();
-    mountChart();
+    })();
   </script>
 </body>
 </html>
