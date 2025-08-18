@@ -4,67 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Market</title>
-
-  <!-- TradingView library -->
   <script src="https://s3.tradingview.com/tv.js"></script>
-
   <style>
     :root{
-      --bg:#0e0f12;
-      --card:#17181d;
-      --text:#eaeaea;
-      --muted:#9aa0a6;
-      --accent:#3b82f6;
-      --radius:14px;
+      --bg:#0e0f12; --card:#17181d; --text:#eaeaea; --muted:#9aa0a6;
+      --accent:#3b82f6; --radius:14px;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
-      color:var(--text); background:var(--bg);
-    }
-
-    /* page width */
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg)}
     .container{max-width:1100px;margin:18px auto;padding:0 14px}
-
-    /* header (optional – remove if already have navbar) */
     .page-title{font-size:28px;font-weight:800;letter-spacing:.5px;margin:6px 0 14px}
-
-    /* card */
-    .card{
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:0 10px 30px rgba(0,0,0,.35);
-      border:1px solid rgba(255,255,255,.06);
-      padding:16px;
-    }
-
-    /* controls row */
-    .controls{
-      display:flex;gap:12px;flex-wrap:wrap;align-items:center;
-      margin-bottom:12px
-    }
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06);padding:16px}
+    .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
     .controls .group{display:flex;gap:8px;align-items:center}
-
     label{color:var(--muted);font-size:14px}
-    select,button{
-      background:#101217;border:1px solid rgba(255,255,255,.1);
-      color:var(--text);border-radius:10px;
-      padding:10px 12px;font-size:14px
-    }
+    select,button{background:#101217;border:1px solid rgba(255,255,255,.1);color:var(--text);border-radius:10px;padding:10px 12px;font-size:14px}
     select:focus,button:focus{outline:none;border-color:var(--accent)}
     button{cursor:pointer;opacity:.9}
     button.active{background:var(--accent);border-color:var(--accent)}
     button:hover{opacity:1}
 
     /* chart area */
-    #tvwrap{
-      height:65vh; min-height:420px;
-      border-radius:12px; overflow:hidden;
-      border:1px solid rgba(255,255,255,.06)
-    }
-
-    /* note text */
+    #tvwrap{height:65vh;min-height:420px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+    /* spacer to keep blank area where volume used to be */
+    #spacer{height:110px}
+    @media (max-width:600px){ #spacer{height:90px} }
     .note{margin-top:10px;color:var(--muted);font-size:12px}
   </style>
 </head>
@@ -73,7 +37,6 @@
     <div class="page-title">Market</div>
 
     <div class="card">
-      <!-- Controls -->
       <div class="controls">
         <div class="group">
           <label for="symbol">Pair</label>
@@ -88,49 +51,40 @@
         <div class="group">
           <label>Interval</label>
           <button data-int="1"  class="tf">1m</button>
-          <button data-int="5"  class="tf">5m</button>
-          <button data-int="15" class="tf active">15m</button>
+          <button data-int="5"  class="tf active">5m</button>
+          <button data-int="15" class="tf">15m</button>
           <button data-int="60" class="tf">1h</button>
           <button data-int="240" class="tf">4h</button>
         </div>
       </div>
 
-      <!-- TradingView container -->
       <div id="tvwrap"></div>
+      <!-- blank space to mimic removed volume area -->
+      <div id="spacer"></div>
 
-      <div class="note">
-        Note: compact mode — top toolbar & left tools hidden for clean view.
-      </div>
+      <div class="note">Note: compact mode — top toolbar & left tools hidden for clean view.</div>
     </div>
   </div>
 
   <script>
-    // ---- Persist keys
-    const LS_KEY_SYMBOL  = 'mk_symbol';
-    const LS_KEY_INT     = 'mk_interval';
+    const LS_KEY_SYMBOL='mk_symbol', LS_KEY_INT='mk_interval';
+    const selSymbol=document.getElementById('symbol');
+    const tfBtns=[...document.querySelectorAll('.tf')];
 
-    // ---- UI refs
-    const selSymbol = document.getElementById('symbol');
-    const tfBtns    = [...document.querySelectorAll('.tf')];
-
-    // ---- Restore last state (if any)
-    const savedSym = localStorage.getItem(LS_KEY_SYMBOL) || 'BINANCE:BTCUSDT';
-    const savedInt = localStorage.getItem(LS_KEY_INT)    || '15';
-    selSymbol.value = savedSym;
-    tfBtns.forEach(b => b.classList.toggle('active', b.dataset.int === savedInt));
+    const savedSym=localStorage.getItem(LS_KEY_SYMBOL) || 'BINANCE:BTCUSDT';
+    const savedInt=localStorage.getItem(LS_KEY_INT) || '5';
+    selSymbol.value=savedSym;
+    tfBtns.forEach(b=>b.classList.toggle('active', b.dataset.int===savedInt));
 
     let tvWidget;
-
     function mountChart(symbol, interval){
-      // Remove old
-      if (tvWidget && tvWidget.remove) tvWidget.remove();
+      if(tvWidget && tvWidget.remove) tvWidget.remove();
 
-      // Create new
       tvWidget = new TradingView.widget({
         container_id: "tvwrap",
         autosize: true,
         symbol: symbol,
-        interval: interval,          // "1", "5", "15", "60", "240"
+        interval: interval,           // "1","5","15","60","240"
         timezone: "Etc/UTC",
         theme: "dark",
         style: "1",
@@ -142,30 +96,26 @@
         details: false,
         calendar: false,
         allow_symbol_change: false,
-        studies: ["Volume@tv-basicstudies"]
+        studies: []                   // <<< volume removed
       });
     }
 
-    // Initial load
     mountChart(savedSym, savedInt);
 
-    // Symbol change
-    selSymbol.addEventListener('change', () => {
-      const sym = selSymbol.value;
-      const intv = document.querySelector('.tf.active')?.dataset.int || '15';
+    selSymbol.addEventListener('change',()=>{
+      const sym=selSymbol.value;
+      const intv=document.querySelector('.tf.active')?.dataset.int || '5';
       localStorage.setItem(LS_KEY_SYMBOL, sym);
       mountChart(sym, intv);
     });
 
-    // Interval change
-    tfBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tfBtns.forEach(b => b.classList.remove('active'));
+    tfBtns.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        tfBtns.forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
-        const intv = btn.dataset.int;
+        const intv=btn.dataset.int;
         localStorage.setItem(LS_KEY_INT, intv);
-        const sym = selSymbol.value;
-        mountChart(sym, intv);
+        mountChart(selSymbol.value, intv);
       });
     });
   </script>
