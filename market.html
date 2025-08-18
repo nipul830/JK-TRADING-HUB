@@ -2,147 +2,172 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Market</title>
+
+  <!-- TradingView library -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
+
   <style>
-    :root { --bg:#111; --card:#191919; --text:#eee; --muted:#9aa0a6; --accent:#0f62fe; }
+    :root{
+      --bg:#0e0f12;
+      --card:#17181d;
+      --text:#eaeaea;
+      --muted:#9aa0a6;
+      --accent:#3b82f6;
+      --radius:14px;
+    }
     *{box-sizing:border-box}
     body{
-      margin:0; background:var(--bg); color:var(--text);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
+      color:var(--text); background:var(--bg);
     }
-    header{padding:16px; text-align:center; font-weight:700; font-size:24px}
-    .wrap{max-width:980px; margin:0 auto; padding:0 14px 28px}
 
-    .card{background:var(--card); border-radius:14px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.3)}
-    .row{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0}
-    button.pill{
-      background:#222; color:var(--text); border:none; border-radius:10px;
-      padding:10px 14px; cursor:pointer; font-weight:600; letter-spacing:.2px
+    /* page width */
+    .container{max-width:1100px;margin:18px auto;padding:0 14px}
+
+    /* header (optional – remove if already have navbar) */
+    .page-title{font-size:28px;font-weight:800;letter-spacing:.5px;margin:6px 0 14px}
+
+    /* card */
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.06);
+      padding:16px;
     }
-    button.pill.active{ background:var(--accent); color:#fff }
-    #miniChart{ width:100%; height:420px; margin-top:10px; border-radius:12px; overflow:hidden }
-    .title{display:flex; justify-content:space-between; align-items:end; gap:8px; flex-wrap:wrap}
-    .pair{font-size:36px; font-weight:800; line-height:1}
-    .price{font-size:22px; color:#9bf59b; font-weight:700}
-    .note{color:var(--muted); font-size:13px; margin-top:10px}
+
+    /* controls row */
+    .controls{
+      display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+      margin-bottom:12px
+    }
+    .controls .group{display:flex;gap:8px;align-items:center}
+
+    label{color:var(--muted);font-size:14px}
+    select,button{
+      background:#101217;border:1px solid rgba(255,255,255,.1);
+      color:var(--text);border-radius:10px;
+      padding:10px 12px;font-size:14px
+    }
+    select:focus,button:focus{outline:none;border-color:var(--accent)}
+    button{cursor:pointer;opacity:.9}
+    button.active{background:var(--accent);border-color:var(--accent)}
+    button:hover{opacity:1}
+
+    /* chart area */
+    #tvwrap{
+      height:65vh; min-height:420px;
+      border-radius:12px; overflow:hidden;
+      border:1px solid rgba(255,255,255,.06)
+    }
+
+    /* note text */
+    .note{margin-top:10px;color:var(--muted);font-size:12px}
   </style>
 </head>
 <body>
-  <header>Market</header>
+  <div class="container">
+    <div class="page-title">Market</div>
 
-  <div class="wrap">
     <div class="card">
-      <div class="title">
-        <div class="pair" id="pairTitle">BTC/USDT</div>
-        <div class="price" id="livePrice">--</div>
+      <!-- Controls -->
+      <div class="controls">
+        <div class="group">
+          <label for="symbol">Pair</label>
+          <select id="symbol">
+            <option value="BINANCE:BTCUSDT">BTC/USDT</option>
+            <option value="BINANCE:ETHUSDT">ETH/USDT</option>
+            <option value="BINANCE:SOLUSDT">SOL/USDT</option>
+            <option value="BINANCE:XRPUSDT">XRP/USDT</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <label>Interval</label>
+          <button data-int="1"  class="tf">1m</button>
+          <button data-int="5"  class="tf">5m</button>
+          <button data-int="15" class="tf active">15m</button>
+          <button data-int="60" class="tf">1h</button>
+          <button data-int="240" class="tf">4h</button>
+        </div>
       </div>
 
-      <!-- Pair Buttons -->
-      <div class="row" id="pairRow">
-        <button class="pill" data-symbol="BTCUSDT" onclick="changePair(this,'BTCUSDT')">BTC/USDT</button>
-        <button class="pill" data-symbol="ETHUSDT" onclick="changePair(this,'ETHUSDT')">ETH/USDT</button>
-        <button class="pill" data-symbol="SOLUSDT" onclick="changePair(this,'SOLUSDT')">SOL/USDT</button>
-        <button class="pill" data-symbol="XRPUSDT" onclick="changePair(this,'XRPUSDT')">XRP/USDT</button>
-      </div>
+      <!-- TradingView container -->
+      <div id="tvwrap"></div>
 
-      <!-- Timeframe Buttons -->
-      <div class="row" id="tfRow">
-        <button class="pill" data-tf="1"   onclick="changeTF(this,'1')">1m</button>
-        <button class="pill" data-tf="5"   onclick="changeTF(this,'5')">5m</button>
-        <button class="pill" data-tf="15"  onclick="changeTF(this,'15')">15m</button>
-        <button class="pill" data-tf="60"  onclick="changeTF(this,'60')">1h</button>
-        <button class="pill" data-tf="240" onclick="changeTF(this,'240')">4h</button>
+      <div class="note">
+        Note: compact mode — top toolbar & left tools hidden for clean view.
       </div>
-
-      <!-- Chart -->
-      <div id="miniChart"></div>
-      <div class="note">Compact mode — top toolbar & left tools hidden for clean view.</div>
     </div>
   </div>
 
-  <!-- TradingView -->
-  <script src="https://s3.tradingview.com/tv.js"></script>
   <script>
-    // ===== Persisted State (localStorage) =====
-    const LS_PAIR_KEY = 'market_active_pair';
-    const LS_TF_KEY   = 'market_active_tf';
+    // ---- Persist keys
+    const LS_KEY_SYMBOL  = 'mk_symbol';
+    const LS_KEY_INT     = 'mk_interval';
 
-    let activeSymbol = localStorage.getItem(LS_PAIR_KEY) || 'BTCUSDT';
-    let activeTF     = localStorage.getItem(LS_TF_KEY)   || '15';
+    // ---- UI refs
+    const selSymbol = document.getElementById('symbol');
+    const tfBtns    = [...document.querySelectorAll('.tf')];
+
+    // ---- Restore last state (if any)
+    const savedSym = localStorage.getItem(LS_KEY_SYMBOL) || 'BINANCE:BTCUSDT';
+    const savedInt = localStorage.getItem(LS_KEY_INT)    || '15';
+    selSymbol.value = savedSym;
+    tfBtns.forEach(b => b.classList.toggle('active', b.dataset.int === savedInt));
 
     let tvWidget;
 
-    // Utility: set .active on correct buttons
-    function setActiveButtons() {
-      // Pair buttons
-      document.querySelectorAll('#pairRow .pill').forEach(b=>{
-        b.classList.toggle('active', b.dataset.symbol === activeSymbol);
-      });
-      // TF buttons
-      document.querySelectorAll('#tfRow .pill').forEach(b=>{
-        b.classList.toggle('active', b.dataset.tf === activeTF);
-      });
-    }
+    function mountChart(symbol, interval){
+      // Remove old
+      if (tvWidget && tvWidget.remove) tvWidget.remove();
 
-    // Load/Reload chart
-    function loadChart() {
-      // Title
-      document.getElementById('pairTitle').textContent = activeSymbol.replace('USDT','/USDT');
-
-      // Chart container reset
-      const container = document.getElementById('miniChart');
-      container.innerHTML = '';
-
-      // Create widget
+      // Create new
       tvWidget = new TradingView.widget({
-        container_id: "miniChart",
+        container_id: "tvwrap",
         autosize: true,
-        symbol: `BINANCE:${activeSymbol}`,
-        interval: activeTF,
+        symbol: symbol,
+        interval: interval,          // "1", "5", "15", "60", "240"
         timezone: "Etc/UTC",
         theme: "dark",
         style: "1",
         locale: "en",
         hide_top_toolbar: true,
+        hide_legend: true,
         hide_side_toolbar: true,
-        allow_symbol_change: false
+        save_image: false,
+        details: false,
+        calendar: false,
+        allow_symbol_change: false,
+        studies: ["Volume@tv-basicstudies"]
       });
-
-      // Refresh live price immediately
-      fetchPrice();
     }
 
-    // Change Handlers
-    function changePair(btn, symbol) {
-      activeSymbol = symbol;
-      localStorage.setItem(LS_PAIR_KEY, activeSymbol);
-      setActiveButtons();
-      loadChart();
-    }
-    function changeTF(btn, tf) {
-      activeTF = tf;
-      localStorage.setItem(LS_TF_KEY, activeTF);
-      setActiveButtons();
-      loadChart();
-    }
+    // Initial load
+    mountChart(savedSym, savedInt);
 
-    // Live Price
-    async function fetchPrice() {
-      try {
-        const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${activeSymbol}`);
-        const j = await r.json();
-        const p = parseFloat(j.price);
-        document.getElementById('livePrice').textContent = isFinite(p) ? p.toFixed(2) : '--';
-      } catch(e){
-        document.getElementById('livePrice').textContent = '--';
-      }
-    }
-    setInterval(fetchPrice, 3000);
+    // Symbol change
+    selSymbol.addEventListener('change', () => {
+      const sym = selSymbol.value;
+      const intv = document.querySelector('.tf.active')?.dataset.int || '15';
+      localStorage.setItem(LS_KEY_SYMBOL, sym);
+      mountChart(sym, intv);
+    });
 
-    // ===== Init on first load =====
-    setActiveButtons();
-    loadChart();
+    // Interval change
+    tfBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tfBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const intv = btn.dataset.int;
+        localStorage.setItem(LS_KEY_INT, intv);
+        const sym = selSymbol.value;
+        mountChart(sym, intv);
+      });
+    });
   </script>
 </body>
 </html>
