@@ -1,75 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Market</title>
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
+    :root { --bg:#111; --card:#191919; --text:#eee; --muted:#9aa0a6; --accent:#0f62fe; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     }
-    .btn-group {
-      margin: 15px 0;
+    header{padding:16px; text-align:center; font-weight:700; font-size:24px}
+    .wrap{max-width:980px; margin:0 auto; padding:0 14px 28px}
+
+    .card{background:var(--card); border-radius:14px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.3)}
+    .row{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0}
+    button.pill{
+      background:#222; color:var(--text); border:none; border-radius:10px;
+      padding:10px 14px; cursor:pointer; font-weight:600; letter-spacing:.2px
     }
-    button {
-      margin: 5px;
-      padding: 8px 15px;
-      border: none;
-      border-radius: 5px;
-      background: #222;
-      color: white;
-      cursor: pointer;
-    }
-    button.active {
-      background: #0f62fe;
-    }
-    #miniChart {
-      width: 100%;
-      height: 400px;
-      margin-top: 15px;
-    }
+    button.pill.active{ background:var(--accent); color:#fff }
+    #miniChart{ width:100%; height:420px; margin-top:10px; border-radius:12px; overflow:hidden }
+    .title{display:flex; justify-content:space-between; align-items:end; gap:8px; flex-wrap:wrap}
+    .pair{font-size:36px; font-weight:800; line-height:1}
+    .price{font-size:22px; color:#9bf59b; font-weight:700}
+    .note{color:var(--muted); font-size:13px; margin-top:10px}
   </style>
 </head>
 <body>
-  <h1 id="pairTitle">BTC/USDT</h1>
-  <h2 id="price">Loading...</h2>
+  <header>Market</header>
 
-  <!-- Pair Buttons -->
-  <div class="btn-group">
-    <button onclick="changePair('BTCUSDT')" class="active">BTC/USDT</button>
-    <button onclick="changePair('ETHUSDT')">ETH/USDT</button>
-    <button onclick="changePair('SOLUSDT')">SOL/USDT</button>
-    <button onclick="changePair('XRPUSDT')">XRP/USDT</button>
+  <div class="wrap">
+    <div class="card">
+      <div class="title">
+        <div class="pair" id="pairTitle">BTC/USDT</div>
+        <div class="price" id="livePrice">--</div>
+      </div>
+
+      <!-- Pair Buttons -->
+      <div class="row" id="pairRow">
+        <button class="pill" data-symbol="BTCUSDT" onclick="changePair(this,'BTCUSDT')">BTC/USDT</button>
+        <button class="pill" data-symbol="ETHUSDT" onclick="changePair(this,'ETHUSDT')">ETH/USDT</button>
+        <button class="pill" data-symbol="SOLUSDT" onclick="changePair(this,'SOLUSDT')">SOL/USDT</button>
+        <button class="pill" data-symbol="XRPUSDT" onclick="changePair(this,'XRPUSDT')">XRP/USDT</button>
+      </div>
+
+      <!-- Timeframe Buttons -->
+      <div class="row" id="tfRow">
+        <button class="pill" data-tf="1"   onclick="changeTF(this,'1')">1m</button>
+        <button class="pill" data-tf="5"   onclick="changeTF(this,'5')">5m</button>
+        <button class="pill" data-tf="15"  onclick="changeTF(this,'15')">15m</button>
+        <button class="pill" data-tf="60"  onclick="changeTF(this,'60')">1h</button>
+        <button class="pill" data-tf="240" onclick="changeTF(this,'240')">4h</button>
+      </div>
+
+      <!-- Chart -->
+      <div id="miniChart"></div>
+      <div class="note">Compact mode — top toolbar & left tools hidden for clean view.</div>
+    </div>
   </div>
 
-  <!-- Timeframe Buttons -->
-  <div class="btn-group">
-    <button onclick="changeTF('1')" class="active">1m</button>
-    <button onclick="changeTF('5')">5m</button>
-    <button onclick="changeTF('15')">15m</button>
-    <button onclick="changeTF('60')">1h</button>
-    <button onclick="changeTF('240')">4h</button>
-  </div>
-
-  <!-- Chart -->
-  <div id="miniChart"></div>
-
-  <!-- TradingView Script -->
-  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <!-- TradingView -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
   <script>
-    let activeSymbol = "BTCUSDT";
-    let activeTF = "15";
+    // ===== Persisted State (localStorage) =====
+    const LS_PAIR_KEY = 'market_active_pair';
+    const LS_TF_KEY   = 'market_active_tf';
+
+    let activeSymbol = localStorage.getItem(LS_PAIR_KEY) || 'BTCUSDT';
+    let activeTF     = localStorage.getItem(LS_TF_KEY)   || '15';
+
     let tvWidget;
 
+    // Utility: set .active on correct buttons
+    function setActiveButtons() {
+      // Pair buttons
+      document.querySelectorAll('#pairRow .pill').forEach(b=>{
+        b.classList.toggle('active', b.dataset.symbol === activeSymbol);
+      });
+      // TF buttons
+      document.querySelectorAll('#tfRow .pill').forEach(b=>{
+        b.classList.toggle('active', b.dataset.tf === activeTF);
+      });
+    }
+
+    // Load/Reload chart
     function loadChart() {
-      document.getElementById("miniChart").innerHTML = "";
+      // Title
+      document.getElementById('pairTitle').textContent = activeSymbol.replace('USDT','/USDT');
+
+      // Chart container reset
+      const container = document.getElementById('miniChart');
+      container.innerHTML = '';
+
+      // Create widget
       tvWidget = new TradingView.widget({
         container_id: "miniChart",
         autosize: true,
-        symbol: `BINANCE:${activeSymbol}`,   // ✅ Correct format
+        symbol: `BINANCE:${activeSymbol}`,
         interval: activeTF,
         timezone: "Etc/UTC",
         theme: "dark",
@@ -79,42 +108,41 @@
         hide_side_toolbar: true,
         allow_symbol_change: false
       });
+
+      // Refresh live price immediately
+      fetchPrice();
     }
 
-    // Change Pair
-    function changePair(symbol) {
+    // Change Handlers
+    function changePair(btn, symbol) {
       activeSymbol = symbol;
-      document.getElementById("pairTitle").innerText = symbol.replace("USDT", "/USDT");
-      document.querySelectorAll(".btn-group:first-of-type button").forEach(b => b.classList.remove("active"));
-      event.target.classList.add("active");
+      localStorage.setItem(LS_PAIR_KEY, activeSymbol);
+      setActiveButtons();
       loadChart();
     }
-
-    // Change Timeframe
-    function changeTF(tf) {
+    function changeTF(btn, tf) {
       activeTF = tf;
-      document.querySelectorAll(".btn-group:nth-of-type(2) button").forEach(b => b.classList.remove("active"));
-      event.target.classList.add("active");
+      localStorage.setItem(LS_TF_KEY, activeTF);
+      setActiveButtons();
       loadChart();
     }
 
-    // Live Price Update
+    // Live Price
     async function fetchPrice() {
       try {
-        let res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${activeSymbol}`);
-        let data = await res.json();
-        document.getElementById("price").innerText = parseFloat(data.price).toFixed(2);
-      } catch (e) {
-        document.getElementById("price").innerText = "Error";
+        const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${activeSymbol}`);
+        const j = await r.json();
+        const p = parseFloat(j.price);
+        document.getElementById('livePrice').textContent = isFinite(p) ? p.toFixed(2) : '--';
+      } catch(e){
+        document.getElementById('livePrice').textContent = '--';
       }
     }
-
-    // Auto refresh price
     setInterval(fetchPrice, 3000);
 
-    // Init
+    // ===== Init on first load =====
+    setActiveButtons();
     loadChart();
-    fetchPrice();
   </script>
 </body>
 </html>
