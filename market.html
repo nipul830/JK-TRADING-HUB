@@ -1,147 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JK Trading Hub — Market</title>
-  <style>
-    :root{--bg:#0e0e0e;--card:#151515;--line:#232323;--text:#f2f2f2;--muted:#9aa0a6;--green:#17c964;--red:#f31260}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-    .nav{position:sticky;top:0;background:#111;border-bottom:1px solid var(--line);display:flex;gap:6px;padding:10px 12px;z-index:9}
-    .nav a{color:#ddd;text-decoration:none;padding:10px 12px;border-radius:8px}
-    .nav a:hover,.nav a.active{background:#1f1f1f;color:#fff}
-    .wrap{max-width:1100px;margin:18px auto;padding:0 14px}
-    h1{margin:0 0 12px}
-    .table{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-    .head,.row{display:grid;grid-template-columns:140px 110px 1fr 90px;gap:10px;align-items:center}
-    .head{background:#101010;color:#bbb;font-weight:600}
-    .head div,.row div{padding:12px 14px}
-    .row{border-top:1px solid var(--line);cursor:pointer}
-    .row:hover{background:#1a1a1a}
-    .sym{display:flex;align-items:center;gap:10px;font-weight:600}
-    .chg.pos{color:var(--green)} .chg.neg{color:var(--red)}
-    .pill{display:inline-block;min-width:78px;padding:6px 10px;border-radius:999px;text-align:right;font-variant-numeric:tabular-nums}
-    .pill.green{background:#0e2f1f;color:#8dffbf} .pill.red{background:#311017;color:#ff9db9}
-    .muted{color:var(--muted)}
-    .chartbox{height:52px}
-    @media (max-width:700px){
-      .head,.row{grid-template-columns:120px 90px 1fr 78px}
-      .pill{min-width:68px}
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Trade — Compact Chart</title>
+<link rel="icon" href="icon.png"/>
+<style>
+  :root{
+    --bg:#0f0f10; --panel:#151517; --text:#e9e9ea; --muted:#9aa0a6; --accent:#e74c3c;
+    --btn:#1f1f22; --btn-on:#27272b; --ring:#2b2b31;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
+    color:var(--text); background:var(--bg);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:14px 14px 60px}
+  header{display:flex;align-items:center;gap:10px;padding:8px 4px}
+  header h1{font-size:28px;margin:0;font-weight:800;letter-spacing:.5px}
+  header .price{margin-left:auto;font-weight:700;opacity:.9}
+
+  /* symbol/timeframe buttons */
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .btn{
+    background:var(--btn); color:var(--text); border:1px solid var(--ring);
+    padding:10px 14px; border-radius:12px; font-weight:700; letter-spacing:.3px;
+    cursor:pointer; user-select:none; transition:.15s; font-size:14px;
+  }
+  .btn:hover{background:var(--btn-on)}
+  .btn.active{outline:2px solid #2f6feb; background:#1a1f2e}
+
+  /* compact chart box */
+  .tv-compact{
+    width:100%; height:280px;              /* yahi se height set karo */
+    background:#111; border:1px solid var(--ring);
+    border-radius:16px; overflow:hidden;
+    box-shadow:0 8px 24px #00000040 inset, 0 0 0 1px #00000020;
+  }
+  @media (min-width:768px){ .tv-compact{ height:340px } }
+
+  .tip{
+    margin-top:10px; font-size:12px; color:var(--muted)
+  }
+</style>
 </head>
 <body>
-  <!-- NAV -->
-  <nav class="nav">
-    <a href="index.html">Home</a>
-    <a class="active" href="market.html">Market</a>
-    <a href="trade.html">Trade</a>
-    <a href="discover.html">Discover</a>
-    <a href="account.html">Account</a>
-  </nav>
+  <div class="wrap">
+    <header>
+      <h1 id="pairTitle">BTC/USDT</h1>
+      <div class="price" id="livePrice">--</div>
+    </header>
 
-  <main class="wrap">
-    <h1>Market</h1>
-    <div class="table" id="marketTable">
-      <div class="head">
-        <div>Instrument</div>
-        <div class="muted">Change</div>
-        <div class="muted">Chart (15m)</div>
-        <div class="muted">Last</div>
-      </div>
-      <!-- rows will be injected -->
+    <!-- symbol buttons -->
+    <div class="row" id="symRow">
+      <div class="btn active" data-sym="BTCUSDT">BTC/USDT</div>
+      <div class="btn" data-sym="ETHUSDT">ETH/USDT</div>
+      <div class="btn" data-sym="SOLUSDT">SOL/USDT</div>
+      <div class="btn" data-sym="XRPUSDT">XRP/USDT</div>
     </div>
-    <p class="muted" style="margin-top:10px">Prices & sparklines from Binance (15m, ~last 100 candles). Tap any row to open full chart on Trade page.</p>
-  </main>
 
-  <!-- Lightweight Charts for mini sparklines -->
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <!-- timeframe buttons -->
+    <div class="row" id="tfRow">
+      <div class="btn" data-tf="1">1m</div>
+      <div class="btn" data-tf="5">5m</div>
+      <div class="btn active" data-tf="15">15m</div>
+      <div class="btn" data-tf="60">1h</div>
+      <div class="btn" data-tf="240">4h</div>
+    </div>
+
+    <!-- COMPACT TRADINGVIEW CHART -->
+    <div id="miniChart" class="tv-compact"></div>
+
+    <div class="tip">Note: compact mode — top toolbar & left drawing tools hidden for clean view.</div>
+  </div>
+
+  <!-- TradingView -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
   <script>
-    const symbols = [
-      'BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT',
-      'DOGEUSDT','TRXUSDT','ADAUSDT','ETCUSDT'
-    ];
-    const tbl = document.getElementById('marketTable');
+    // --------- helpers ----------
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
 
-    // Create one row DOM
-    function createRow(sym){
-      const row = document.createElement('div');
-      row.className='row';
-      row.dataset.sym=sym;
+    // Default state from URL hash if present: #BTCUSDT-15
+    const parsed = (location.hash||'').replace('#','').split('-');
+    let activeSymbol  = parsed[0] || 'BTCUSDT';
+    let activeTF      = parsed[1] || '15';
+    let tvWidget      = null;
 
-      const c1 = document.createElement('div'); c1.className='sym'; c1.textContent = sym.replace('USDT','/USDT');
-      const c2 = document.createElement('div'); c2.innerHTML = `<span class="pill muted">--</span>`;
-      const c3 = document.createElement('div'); c3.className='chartbox'; // sparkline container
-      const c4 = document.createElement('div'); c4.innerHTML = `<span class="pill muted" style="text-align:right">--</span>`;
+    const pairTitle   = $('#pairTitle');
+    const livePriceEl = $('#livePrice');
 
-      row.append(c1,c2,c3,c4);
-
-      // click -> open trade page with hash (persists symbol)
-      row.addEventListener('click',()=>location.href=`trade.html#${sym}`);
-
-      tbl.appendChild(row);
-      return {row, c1, c2, c3, c4};
-    }
-
-    // Fetch helpers
-    async function getTicker24h(sym){
-      const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}`);
-      if(!r.ok) throw new Error('ticker failed');
-      return r.json();
-    }
-    async function getKlines(sym, interval='15m', limit=100){
-      const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=${limit}`);
-      if(!r.ok) throw new Error('klines failed');
-      return r.json();
-    }
-
-    // Mini chart render
-    function renderSpark(container, data){
-      const chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
-        layout:{background: { type: 'solid', color: 'transparent' }, textColor:'#9aa0a6'},
-        rightPriceScale:{visible:false}, timeScale:{visible:false}, grid:{vertLines:{visible:false}, horzLines:{visible:false}},
-        crosshair:{visible:false}
+    // set buttons initial UI
+    function syncButtons(){
+      $all('#symRow .btn').forEach(b=>{
+        b.classList.toggle('active', b.dataset.sym===activeSymbol);
       });
-      const series = chart.addAreaSeries({
-        lineColor:'#12b886', topColor:'rgba(18,184,134,0.35)', bottomColor:'rgba(18,184,134,0.05)'
+      $all('#tfRow .btn').forEach(b=>{
+        b.classList.toggle('active', b.dataset.tf===activeTF);
       });
-      series.setData(data);
-      // auto-resize
-      new ResizeObserver(() => chart.applyOptions({ width: container.clientWidth })).observe(container);
-      return chart;
+      pairTitle.textContent = activeSymbol.replace('USDT','/USDT');
     }
 
-    // Populate all rows
-    (async function init(){
-      for(const sym of symbols){
-        const {row, c2, c3, c4} = createRow(sym);
+    // Mount compact TradingView
+    function mountMiniTV(){
+      syncButtons();
+      // Remove previous
+      if(tvWidget && tvWidget.remove) try{ tvWidget.remove(); }catch(e){}
 
-        // parallel fetch
-        try{
-          const [tkr, kl] = await Promise.all([getTicker24h(sym), getKlines(sym,'15m',100)]);
+      tvWidget = new TradingView.widget({
+        container_id: "miniChart",
+        autosize: true,
+        symbol: `${activeSymbol}:BINANCE`,
+        interval: activeTF,          // "1","5","15","60","240"
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",                  // candles
+        locale: "en",
+        // ---- COMPACT MODE ----
+        hide_top_toolbar: true,
+        hide_side_toolbar: true,
+        withdateranges: false,
+        details: false,
+        hotlist: false,
+        calendar: false,
+        allow_symbol_change: false,
+        save_image: false,
+        studies: [],
+        // ----------------------
+        toolbar_bg: "#111",
+        backgroundColor: "#111",
+        loading_screen:{ backgroundColor:"#111", foregroundColor:"#888" }
+      });
 
-          // price & change
-          const last = Number(tkr.lastPrice);
-          const chg = Number(tkr.priceChangePercent);
-          const pillLast = c4.querySelector('.pill');
-          const pillChg = c2.querySelector('.pill');
+      // Simple live price fetch (Binance day ticker) for header number
+      updateLive(); clearInterval(window.__pxTimer);
+      window.__pxTimer = setInterval(updateLive, 4000);
+    }
 
-          pillLast.textContent = last.toFixed(2);
-          pillLast.classList.remove('muted'); pillLast.classList.add(chg>=0?'green':'red');
+    async function updateLive(){
+      try{
+        const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${activeSymbol}`);
+        const j = await r.json();
+        const p = Number(j.price);
+        livePriceEl.textContent = isFinite(p) ? p.toLocaleString(undefined,{maximumFractionDigits:2}) : '--';
+      }catch(e){ livePriceEl.textContent='--'; }
+    }
 
-          pillChg.textContent = (chg>=0?'+':'') + chg.toFixed(2) + '%';
-          pillChg.classList.remove('muted'); pillChg.classList.add(chg>=0?'green':'red');
+    // Button listeners
+    $all('#symRow .btn').forEach(b=>{
+      b.onclick = () => {
+        activeSymbol = b.dataset.sym;
+        location.hash = `#${activeSymbol}-${activeTF}`;
+        mountMiniTV();
+      };
+    });
+    $all('#tfRow .btn').forEach(b=>{
+      b.onclick = () => {
+        activeTF = b.dataset.tf;
+        location.hash = `#${activeSymbol}-${activeTF}`;
+        mountMiniTV();
+      };
+    });
 
-          // sparkline data
-          const data = kl.map(k => ({ time: Math.floor(k[0]/1000), value: Number(k[4]) }));
-          renderSpark(c3, data);
-        }catch(e){
-          c3.innerHTML = '<span class="muted">data error</span>';
-          console.error(sym, e);
-        }
-      }
-    })();
+    // react if user manually changes hash
+    window.addEventListener('hashchange', () => {
+      const [s,tf] = (location.hash||'').replace('#','').split('-');
+      if(s){ activeSymbol=s; } if(tf){ activeTF=tf; }
+      mountMiniTV();
+    });
+
+    // Initial load
+    mountMiniTV();
   </script>
 </body>
 </html>
