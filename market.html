@@ -2,31 +2,162 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JK Trading Hub — Market</title>
+  <title>JK Trading Hub — Trade</title>
   <style>
-    :root{--bg:#0e0e0e;--card:#161616;--text:#f3f3f3;--muted:#9aa0a6}
+    :root{--bg:#0e0e0e;--card:#161616;--text:#f3f3f3;--muted:#9aa0a6;--line:#222}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-    .nav{position:sticky;top:0;background:#111;border-bottom:1px solid #222;display:flex;gap:6px;padding:10px 12px}
+    /* Navbar */
+    .nav{position:sticky;top:0;background:#111;border-bottom:1px solid var(--line);display:flex;gap:6px;padding:10px 12px;z-index:9}
     .nav a{color:#ddd;text-decoration:none;padding:10px 12px;border-radius:8px}
     .nav a:hover,.nav a.active{background:#1f1f1f;color:#fff}
-    .wrap{max-width:1000px;margin:32px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid #222;border-radius:14px;padding:24px}
-    h1{margin:0 0 6px}.muted{color:var(--muted)}
+    /* Layout */
+    .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+    h1{margin:0 0 8px} .muted{color:var(--muted)}
+    /* Controls */
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+    .btn{background:#1f1f1f;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
+    .btn.active{background:#fff;color:#000;border-color:#fff}
+    .spacer{height:8px}
+    /* Chart holder */
+    #chartWrap{height:520px}
+    @media (max-width:640px){ #chartWrap{height:440px} }
   </style>
 </head>
 <body>
+  <!-- NAVBAR (same across pages) -->
   <nav class="nav">
     <a href="index.html">Home</a>
-    <a href="trade.html">Trade</a>
-    <a class="active" href="market.html">Market</a>
+    <a class="active" href="trade.html">Trade</a>
+    <a href="market.html">Market</a>
     <a href="discover.html">Discover</a>
     <a href="account.html">Account</a>
   </nav>
+
   <main class="wrap">
     <div class="card">
-      <h1>Market</h1>
-      <div class="muted">Blank list area. Yahan pairs/tiles add karenge.</div>
+      <div class="row">
+        <h1 id="title" style="margin-right:auto">BTC/USDT</h1>
+        <span class="muted" id="live">—</span>
+      </div>
+
+      <!-- Symbol buttons -->
+      <div class="row" id="symbols">
+        <button class="btn active" data-sym="BINANCE:BTCUSDT">BTC/USDT</button>
+        <button class="btn" data-sym="BINANCE:ETHUSDT">ETH/USDT</button>
+        <button class="btn" data-sym="BINANCE:SOLUSDT">SOL/USDT</button>
+        <button class="btn" data-sym="BINANCE:XRPUSDT">XRP/USDT</button>
+      </div>
+
+      <!-- Timeframe buttons -->
+      <div class="row" id="tfs">
+        <button class="btn" data-tf="1">1m</button>
+        <button class="btn" data-tf="5">5m</button>
+        <button class="btn active" data-tf="15">15m</button>
+        <button class="btn" data-tf="60">1h</button>
+        <button class="btn" data-tf="240">4h</button>
+      </div>
+
+      <!-- Chart container -->
+      <div id="chartWrap" class="card" style="padding:0;margin-top:8px">
+        <div id="tv" style="height:100%;"></div>
+      </div>
+
+      <div class="spacer"></div>
+      <div class="muted">Tip: buttons se coin/interval badal sakte ho. Chart TradingView ka live data use karta hai.</div>
     </div>
   </main>
+
+  <!-- TradingView library -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <script>
+    // State
+    let tvWidget = null;
+    const state = { sym: 'BINANCE:BTCUSDT', tf: '15' };
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+
+    // Mount / remount TradingView
+    function mountChart(){
+      // Clear previous chart
+      $('#tv').innerHTML = '';
+      // Create new widget
+      tvWidget = new TradingView.widget({
+        autosize: true,
+        container_id: 'tv',
+        symbol: state.sym,
+        interval: state.tf,
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        withdateranges: true,
+        hide_side_toolbar: false,
+        allow_symbol_change: false
+      });
+      // Update title text
+      $('#title').textContent = state.sym.replace('BINANCE:','').replace('USDT','/USDT');
+      // Start live price updater
+      startLivePrice();
+    }
+
+    // Live price (Binance ticker/price)
+    let priceTimer = null;
+    async function fetchPrice(sym){
+      const s = sym.replace('BINANCE:','');
+      try{
+        const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
+        const d = await r.json();
+        return Number(d.price);
+      }catch(e){ return null; }
+    }
+    function startLivePrice(){
+      if(priceTimer) clearInterval(priceTimer);
+      priceTimer = setInterval(async ()=>{
+        const px = await fetchPrice(state.sym);
+        if(px){ $('#live').textContent = px.toFixed(2); }
+      }, 4000);
+    }
+
+    // Wire symbol buttons
+    $$('#symbols .btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        $$('#symbols .btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        state.sym = btn.dataset.sym;
+        mountChart();
+      });
+    });
+
+    // Wire timeframe buttons
+    $$('#tfs .btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        $$('#tfs .btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        state.tf = btn.dataset.tf;
+        mountChart();
+      });
+    });
+
+    // Support deep link via hash: trade.html#ETHUSDT or #BTCUSDT, etc.
+    function applyHash(){
+      const raw = (location.hash || '').replace('#','').toUpperCase();
+      if(raw && /USDT$/.test(raw)){
+        // Try to match one of our buttons
+        const symFull = 'BINANCE:'+raw;
+        const targetBtn = Array.from($$('#symbols .btn')).find(b => b.dataset.sym === symFull);
+        if(targetBtn){
+          $$('#symbols .btn').forEach(b=>b.classList.remove('active'));
+          targetBtn.classList.add('active');
+          state.sym = symFull;
+        }
+      }
+    }
+
+    // Init
+    applyHash();
+    mountChart();
+  </script>
 </body>
 </html>
