@@ -1,25 +1,101 @@
-/* ===== Nav tabs (common) ===== */
-.tabs{
-  position: sticky; top: 0; z-index: 50;
-  display:flex; gap:12px; align-items:center;
-  padding:10px 16px;
-  background:#0f1115; /* dark header */
-  border-bottom:1px solid rgba(255,255,255,0.06);
-}
-.tab{
-  display:inline-flex; align-items:center; justify-content:center;
-  padding:10px 14px; border-radius:10px;
-  font-size:16px; font-weight:600; letter-spacing:.2px;
-  color:#b9c0cc; text-decoration:none;
-  transition: all .18s ease;
-}
-.tab:hover{ color:#e7ecf3; background:rgba(255,255,255,0.06); }
-.tab.active{
-  color:#121418; background:#66e2a8;  /* mint */
-  box-shadow:0 0 0 1px rgba(0,0,0,.2) inset;
+:root{
+  --bg:#0f0f10;
+  --panel:#1a1b1e;
+  --panel-2:#111214;
+  --text:#e7e7ea;
+  --muted:#9aa0a6;
+  --accent:#4cafef;
+  --green:#1db954;
+  --red:#d64b4b;
+  --border:#2b2c30;
 }
 
-/* mobile spacing so content not hides under sticky header */
-main, .page, .container, section{ 
-  padding-top:10px; 
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+a{color:inherit;text-decoration:none}
+
+main{padding:16px;max-width:1100px;margin:0 auto}
+
+/* = NAVBAR = */
+.navbar{
+  position:sticky; top:0; z-index:1000;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:10px 16px;
+  background:linear-gradient(180deg,#0b0b0c,#0f0f10);
+  border-bottom:1px solid var(--border);
 }
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand .logo{font-size:18px}
+.tabs{position:relative; display:flex; gap:12px; overflow-x:auto}
+.tab{padding:8px 12px;border-radius:10px;color:#c9ccd1;white-space:nowrap}
+.tab.active{background:var(--panel); color:#fff; font-weight:700}
+.tab-underline{position:absolute;height:3px;background:var(--accent);bottom:0;left:0;width:0;transition:transform .2s,width .2s}
+
+/* = CARDS & FORMS = */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+h2,h3{margin:0 0 8px;color:var(--accent)}
+.note{opacity:.9;margin-top:8px}
+.subnote{color:var(--muted);font-size:13px;margin:8px 0 0}
+
+.f{display:flex;flex-direction:column;gap:6px}
+input,select,textarea{
+  width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+  background:var(--panel-2); color:var(--text); outline:none;
+}
+textarea{resize:vertical}
+
+.row{display:flex;gap:10px;align-items:center}
+.wrap{flex-wrap:wrap}
+.grid-2{display:grid;grid-template-columns:1fr 1fr}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr}
+.gap{gap:12px}
+@media (max-width:760px){
+  .grid-2,.grid-3{grid-template-columns:1fr}
+}
+
+/* Buttons */
+.btn{
+  padding:10px 14px; border-radius:10px; border:1px solid var(--border);
+  background:var(--panel-2); color:#fff; cursor:pointer; font-weight:600;
+}
+.btn:hover{filter:brightness(1.06)}
+.btn.start{background:var(--green); border-color:#1e8a47}
+.btn.stop{background:var(--red); border-color:#a53b3b}
+.btn.ghost{background:transparent;border:1px dashed var(--border);color:var(--muted)}
+.btn.file{position:relative;display:inline-flex;align-items:center;gap:8px}
+.pulse{animation:pulse .6s}
+@keyframes pulse{50%{transform:scale(1.02)}}
+
+/* Badges */
+.badge{
+  padding:6px 10px;border-radius:20px;font-weight:700;font-size:12px;border:1px solid var(--border)
+}
+.badge.green{background:#133a26;color:#79e8a1;border-color:#1d6b45}
+.badge.red{background:#3a1717;color:#ff9a9a;border-color:#6d2a2a}
+
+/* Chips (indicators list) */
+.chip-list{list-style:none;display:flex;gap:10px;flex-wrap:wrap;padding:0;margin:10px 0 0}
+.chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:16px;background:var(--panel-2);border:1px solid var(--border)}
+.chip .x{border:none;background:#0000;color:#ffadad;font-weight:700;cursor:pointer}
+
+/* little segmented control */
+.seg{display:flex;gap:8px}
+.seg button{padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel-2);color:#cfd3da;cursor:pointer}
+.seg button.active{background:var(--accent);color:#081018;border-color:#2b6f94}
+
+/* password inline button */
+.pw{display:flex;gap:8px}
+.pw input{flex:1}
+
+/* Pages */
+.page{display:none}
+
+/* TV Chart */
+.tv-wrap{margin-top:10px;border-radius:12px;border:1px solid var(--border);background:#0f0f10;overflow:hidden}
+.tv-chart{width:100%;height:540px}
+.tv-bottom-blank{height:40px;background:#0f0f10}
+
+/* Small helpers */
+.right{text-align:right}
+.small{font-size:12px;color:var(--muted)}
