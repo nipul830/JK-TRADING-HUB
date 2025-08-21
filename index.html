@@ -1,34 +1,197 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JK Trading Hub — Home</title>
-  <style>
-    :root{--bg:#0e0e0e;--card:#161616;--text:#f3f3f3;--muted:#9aa0a6;--accent:#ef4444}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-    .nav{position:sticky;top:0;background:#111;border-bottom:1px solid #222;display:flex;gap:6px;padding:10px 12px;z-index:9}
-    .nav a{color:#ddd;text-decoration:none;padding:10px 12px;border-radius:8px}
-    .nav a:hover,.nav a.active{background:#1f1f1f;color:#fff}
-    .wrap{max-width:1000px;margin:32px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid #222;border-radius:14px;padding:24px}
-    h1{margin:0 0 6px} .muted{color:var(--muted)}
-  </style>
-</head>
-<body>
-  <nav class="nav">
-    <a class="active" href="index.html">Home</a>
-    <a href="trade.html">Trade</a>
-    <a href="market.html">Market</a>
-    <a href="discover.html">Discover</a>
-    <a href="account.html">Account</a>
-  </nav>
+<!-- === ALGO CONTROL (HOME) === -->
+<section class="card algo-wrap">
+  <div class="algo-head">
+    <h2>JK ALGO</h2>
+    <span id="algoStatus" class="badge stopped">Stopped</span>
+  </div>
 
-  <main class="wrap">
-    <div class="card">
-      <h1>JK Trading Hub 🚀</h1>
-      <div class="muted">Blank starter — ab yahan jo chaho add kar sakte ho.</div>
-    </div>
-  </main>
-</body>
-</html>
+  <div class="grid-2">
+    <label class="f">
+      <span>Pair</span>
+      <select id="pairSel">
+        <option value="BTCUSDT">BTC/USDT</option>
+        <option value="ETHUSDT">ETH/USDT</option>
+        <option value="SOLUSDT">SOL/USDT</option>
+        <option value="XRPUSDT">XRP/USDT</option>
+      </select>
+    </label>
+
+    <label class="f">
+      <span>Timeframe</span>
+      <select id="tfSel">
+        <option value="1m">1m</option>
+        <option value="5m" selected>5m</option>
+        <option value="15m">15m</option>
+        <option value="1h">1h</option>
+        <option value="4h">4h</option>
+      </select>
+    </label>
+
+    <label class="f">
+      <span>Strategy</span>
+      <select id="stratSel">
+        <option value="ma">MA Cross (demo)</option>
+        <option value="rsi">RSI (demo)</option>
+        <option value="breakout">Breakout (demo)</option>
+      </select>
+    </label>
+
+    <label class="f">
+      <span>Qty</span>
+      <input id="qtyInp" type="number" min="0" step="0.01" value="0.10" />
+    </label>
+  </div>
+
+  <div class="row gap">
+    <button id="btnStart" class="btn green">Start</button>
+    <button id="btnStop"  class="btn red" disabled>Stop</button>
+    <button id="btnClear" class="btn ghost">Clear Logs</button>
+  </div>
+
+  <div class="algo-stats">
+    <div><small>Position</small><strong id="posSide">—</strong></div>
+    <div><small>Avg Price</small><strong id="avgPrice">—</strong></div>
+    <div><small>PnL (demo)</small><strong id="pnl">—</strong></div>
+  </div>
+
+  <h3 class="mt">Logs</h3>
+  <div id="logBox" class="logbox"></div>
+</section>
+
+<script>
+/* ===== Simple demo algo state (UI only) ===== */
+const LS_KEY = 'jk_algo_state_v1';
+
+const el = (id) => document.getElementById(id);
+const pairSel  = el('pairSel');
+const tfSel    = el('tfSel');
+const stratSel = el('stratSel');
+const qtyInp   = el('qtyInp');
+const btnStart = el('btnStart');
+const btnStop  = el('btnStop');
+const btnClear = el('btnClear');
+const algoStatus = el('algoStatus');
+const logBox   = el('logBox');
+const posSide  = el('posSide');
+const avgPrice = el('avgPrice');
+const pnlEl    = el('pnl');
+
+let timer = null;
+let state = {
+  running: false,
+  pair: 'BTCUSDT',
+  tf: '5m',
+  strat: 'ma',
+  qty: 0.1,
+  pos: null,      // {side:'LONG'|'SHORT', avg: number}
+  pnl: 0,
+  price: 100.0,   // demo price
+  logs: []
+};
+
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_KEY));
+    if(s){ state = Object.assign(state, s); }
+  }catch(e){}
+  pairSel.value  = state.pair;
+  tfSel.value    = state.tf;
+  stratSel.value = state.strat;
+  qtyInp.value   = state.qty;
+  render();
+}
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+function log(msg){
+  const t = new Date().toLocaleTimeString();
+  state.logs.unshift(`[${t}] ${msg}`);
+  if(state.logs.length>200) state.logs.length = 200;
+  renderLogs();
+  saveState();
+}
+function renderLogs(){
+  logBox.innerHTML = state.logs.map(l=>`<div>${l}</div>`).join('');
+}
+function render(){
+  algoStatus.textContent = state.running ? 'Running' : 'Stopped';
+  algoStatus.className = 'badge ' + (state.running?'running':'stopped');
+
+  posSide.textContent  = state.pos? state.pos.side : '—';
+  avgPrice.textContent = state.pos? state.pos.avg.toFixed(2) : '—';
+  pnlEl.textContent    = (state.pnl>=0?'+':'') + state.pnl.toFixed(2);
+
+  btnStart.disabled = state.running;
+  btnStop.disabled  = !state.running;
+
+  renderLogs();
+}
+function start(){
+  state.pair  = pairSel.value;
+  state.tf    = tfSel.value;
+  state.strat = stratSel.value;
+  state.qty   = parseFloat(qtyInp.value||0.1);
+  state.running = true;
+  // seed demo price a bit different per pair
+  const seed = {BTCUSDT:116000, ETHUSDT:4350, SOLUSDT:192, XRPUSDT:3.1}[state.pair] || 100;
+  state.price = seed;
+  log(`ALGO started: ${state.pair} / ${state.tf} / ${state.strat} / qty ${state.qty}`);
+  tick();
+  timer = setInterval(tick, 4000);
+  render(); saveState();
+}
+function stop(){
+  if(timer){ clearInterval(timer); timer=null; }
+  state.running = false;
+  log('ALGO stopped');
+  render(); saveState();
+}
+function clearLogs(){
+  state.logs = [];
+  render(); saveState();
+}
+function tick(){
+  // demo price walk
+  const drift = (Math.random()-0.5) * (state.price*0.0008);
+  state.price = Math.max(0.0001, state.price + drift);
+
+  // demo strategy:
+  //  - ma: buy on up-tick, sell on down-tick
+  //  - rsi/breakout behave similar (just for UI)
+  const up = drift>0;
+  let signal = up?'BUY':'SELL';
+
+  if(!state.pos){
+    // open position
+    state.pos = { side: signal==='BUY'?'LONG':'SHORT', avg: state.price };
+    log(`Open ${state.pos.side} @ ${state.price.toFixed(2)}`);
+  }else{
+    // occasionally flip/close
+    if(Math.random()<0.35){
+      const pnlNow = calcPnl(state.pos, state.price, state.qty);
+      state.pnl += pnlNow;
+      log(`Close ${state.pos.side} @ ${state.price.toFixed(2)}  | PnL: ${(pnlNow>=0?'+':'')+pnlNow.toFixed(2)}`);
+      state.pos = null;
+    }else{
+      // scale avg slightly
+      state.pos.avg = (state.pos.avg*0.9 + state.price*0.1);
+    }
+  }
+  render(); saveState();
+}
+function calcPnl(pos, price, qty){
+  const diff = pos.side==='LONG' ? (price - pos.avg) : (pos.avg - price);
+  return diff * qty;
+}
+
+// events
+btnStart.onclick = start;
+btnStop.onclick  = stop;
+btnClear.onclick = clearLogs;
+[pairSel, tfSel, stratSel, qtyInp].forEach(c=>c.addEventListener('change', ()=>{
+  state.pair = pairSel.value; state.tf=tfSel.value; state.strat=stratSel.value; state.qty=parseFloat(qtyInp.value||0.1);
+  saveState();
+}));
+
+loadState();
+</script>
