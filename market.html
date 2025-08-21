@@ -1,12 +1,45 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>JK Trading Hub — Market</title>
   <link rel="stylesheet" href="style.css"/>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #000;
+      padding: 10px;
+      gap: 20px;
+    }
+    .tabs .tab {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .tabs .tab.active {
+      color: #fff;
+      font-weight: bold;
+      border-bottom: 2px solid #4cafef;
+    }
+    .chart-box {
+      margin: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+  </style>
 </head>
 <body>
 
+  <!-- NAVBAR -->
   <nav class="tabs">
     <a class="tab" href="index.html">Home</a>
     <a class="tab" href="market.html">Market</a>
@@ -14,13 +47,23 @@
     <a class="tab" href="discover.html">Discover</a>
     <a class="tab" href="account.html">My Account</a>
   </nav>
-  <script>(function(){var f=location.pathname.split('/').pop()||'market.html';document.querySelectorAll('.tabs .tab').forEach(a=>{if(a.getAttribute('href')===f)a.classList.add('active');});})();</script>
 
-  <!-- Your market content (charts/list) -->
-  <section class="card section">
-    <h3>Market</h3>
-    <p class="small">Yahan pe tum apna market chart/list code rakh sakte ho.</p>
-  </section>
+  <script>
+    (function(){
+      var f = location.pathname.split('/').pop() || 'market.html';
+      document.querySelectorAll('.tabs .tab').forEach(a=>{
+        if(a.getAttribute('href')===f) a.classList.add('active');
+      });
+    })();
+  </script>
+
+  <!-- ✅ Chart Section -->
+  <div class="chart-box">
+    <iframe 
+      src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_xxx&symbol=BINANCE:BTCUSDT&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=111111&studies=[]&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&enable_publishing=0"
+      width="100%" height="600" frameborder="0" allowtransparency="true" scrolling="no">
+    </iframe>
+  </div>
 
 </body>
 </html>
