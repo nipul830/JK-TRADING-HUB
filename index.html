@@ -1,220 +1,381 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JK Trading Hub — Home</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>JK Trading Hub</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- TradingView script (Market page में chart के लिये) -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
-
-  <!-- ===== NAVBAR (common) ===== -->
-  <nav class="tabs">
-    <a class="tab" href="index.html">Home</a>
-    <a class="tab" href="market.html">Market</a>
-    <a class="tab" href="trade.html">Trade</a>
-    <a class="tab" href="discover.html">Discover</a>
-    <a class="tab" href="account.html">My Account</a>
-  </nav>
-  <script>
-    (function(){var f=location.pathname.split('/').pop()||'index.html';
-      document.querySelectorAll('.tabs .tab').forEach(a=>{
-        if(a.getAttribute('href')===f) a.classList.add('active');
-      });
-    })();
-  </script>
-
-  <!-- ===== ALGO SETUP ===== -->
-  <section class="card section" id="algoBox">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <h3 style="margin:0">JK ALGO Setup</h3>
-      <span id="algoStatus" class="badge mute">Stopped</span>
+  <!-- ===== NAVBAR (sticky) ===== -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo">🚀</span>
+      <span>JK Trading Hub</span>
     </div>
+    <nav class="tabs" id="tabs">
+      <a href="#home"     class="tab" data-section="home">Home</a>
+      <a href="#market"   class="tab" data-section="market">Market</a>
+      <a href="#trade"    class="tab" data-section="trade">Trade</a>
+      <a href="#discover" class="tab" data-section="discover">Discover</a>
+      <a href="#account"  class="tab" data-section="account">My Account</a>
+      <div class="tab-underline" id="tabUnderline"></div>
+    </nav>
+  </header>
 
-    <div class="row">
-      <label class="f">
-        <span>Pair</span>
-        <select id="pair" class="select">
-          <option value="BTCUSDT">BTC/USDT</option>
-          <option value="ETHUSDT">ETH/USDT</option>
-          <option value="SOLUSDT">SOL/USDT</option>
-          <option value="XRPUSDT">XRP/USDT</option>
-        </select>
-      </label>
-
-      <label class="f">
-        <span>Timeframe</span>
-        <select id="tf" class="select">
-          <option value="1m">1m</option>
-          <option value="5m" selected>5m</option>
-          <option value="15m">15m</option>
-          <option value="1h">1h</option>
-          <option value="4h">4h</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <label class="f">
-        <span>Risk per Trade (%)</span>
-        <input id="risk" type="number" step="0.1" min="0" class="input" placeholder="e.g. 1.0" />
-      </label>
-      <label class="f">
-        <span>Position Size (USDT)</span>
-        <input id="size" type="number" step="1" min="0" class="input" placeholder="e.g. 100" />
-      </label>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:12px">
-      <button id="start" class="btn primary">Start</button>
-      <button id="stop" class="btn warn">Stop</button>
-      <div id="savedCfg" class="small" style="margin-left:6px"></div>
-    </div>
-
-    <div class="hr"></div>
-    <div class="small">Frontend‑only UI. Settings <b>localStorage</b> me save hote hain. Real trading later plug karenge.</div>
-  </section>
-
-  <!-- ===== STRATEGY & INDICATORS ===== -->
-  <section class="card section" id="stratBox">
-    <h3>Strategy &amp; Indicators</h3>
-
-    <div class="grid-3">
-      <div class="f">
-        <span>Pine‑like Strategy (paste code)</span>
-        <textarea id="pine" class="input ta" spellcheck="false" placeholder="//@version=5
-indicator('JK Demo', overlay=true)
-emaFast = ta.ema(close, 9)
-emaSlow = ta.ema(close, 21)
-long  = ta.crossover(emaFast, emaSlow)
-short = ta.crossunder(emaFast, emaSlow)"></textarea>
-      </div>
-
-      <div class="f">
-        <span>Add Indicator (max 5)</span>
-        <div class="row" style="grid-template-columns:1fr 1fr">
-          <input id="indName" class="input" placeholder="e.g. EMA" />
-          <input id="indArgs" class="input" placeholder="e.g. length=20" />
+  <main>
+    <!-- ===== HOME ===== -->
+    <section id="home" class="page">
+      <!-- ALGO SETUP -->
+      <div class="card">
+        <div class="card-head">
+          <h2>JK ALGO Setup</h2>
+          <span id="algoStatus" class="badge red">Stopped</span>
         </div>
-        <button id="addInd" class="btn">Add</button>
-        <ul id="indList" class="ind-list"></ul>
-        <div class="small">Popular: EMA length=20, RSI length=14, MACD fast=12,slow=26,signal=9…</div>
+
+        <div class="grid-2 gap">
+          <label class="f">
+            <span>Pair</span>
+            <select id="pairSel">
+              <option value="BTCUSDT">BTC/USDT</option>
+              <option value="ETHUSDT">ETH/USDT</option>
+              <option value="SOLUSDT">SOL/USDT</option>
+              <option value="XRPUSDT">XRP/USDT</option>
+              <option value="ADAUSDT">ADA/USDT</option>
+            </select>
+          </label>
+
+          <label class="f">
+            <span>Timeframe</span>
+            <select id="tfSel">
+              <option>1m</option><option>5m</option><option>15m</option>
+              <option>1h</option><option>4h</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid-2 gap">
+          <label class="f">
+            <span>Risk per Trade (%)</span>
+            <input id="riskPct" type="number" step="0.1" placeholder="e.g. 1.0" />
+          </label>
+          <label class="f">
+            <span>Position Size (USDT)</span>
+            <input id="posSize" type="number" step="1" placeholder="e.g. 100" />
+          </label>
+        </div>
+
+        <div class="row">
+          <button class="btn start" id="btnStart">Start</button>
+          <button class="btn stop"  id="btnStop">Stop</button>
+        </div>
+
+        <p class="note">
+          Note: Ye UI frontend‑only hai; koi order execute nahin karta. Start/Stop
+          &amp; settings <b>localStorage</b> me save hote hain. Real trading plugin baad me.
+        </p>
       </div>
 
-      <div class="f">
-        <span>Actions</span>
-        <button id="saveStrat" class="btn">Save Strategy</button>
-        <button id="exportCfg" class="btn">Export JSON</button>
+      <!-- STRATEGY & INDICATORS -->
+      <div class="card">
+        <h3>Strategy &amp; Indicators</h3>
+
         <label class="f">
-          <span class="small">Import JSON</span>
-          <input id="importFile" type="file" accept="application/json" class="input" />
+          <span>Pine‑like Strategy (paste code)</span>
+          <textarea id="pineBox" rows="6" placeholder="//@version=5
+indicator('JK Demo', overlay=true)
+emaFastLen = 12
+emaSlowLen = 26
+// ..."></textarea>
         </label>
-        <div id="stratSaved" class="small"></div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ===== API KEYS ===== -->
-  <section class="card section" id="apiBox">
-    <h3>API Keys</h3>
-
-    <div class="api-row">
-      <label class="f">
-        <span>Exchange</span>
-        <select id="exch" class="select">
-          <option>Binance</option>
-          <option>Bybit</option>
-          <option>OKX</option>
-        </select>
-      </label>
-      <div></div>
-    </div>
-
-    <div class="api-row" style="margin-top:8px">
-      <label class="f">
-        <span>API Key</span>
-        <input id="apiKey" class="input" placeholder="xxxxxxxx" />
-      </label>
-      <label class="f">
-        <span>API Secret</span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="apiSec" class="input" type="password" placeholder="********" style="flex:1" />
-          <span id="toggleSec" class="small" style="cursor:pointer">Show</span>
+        <div class="grid-3 gap">
+          <label class="f">
+            <span>Add Indicator</span>
+            <input id="indName" placeholder="e.g. EMA" />
+          </label>
+          <label class="f">
+            <span>Params</span>
+            <input id="indParams" placeholder="e.g. length=20" />
+          </label>
+          <div class="f">
+            <span>&nbsp;</span>
+            <button id="btnAddInd" class="btn">Add</button>
+          </div>
         </div>
-      </label>
-    </div>
 
-    <div style="display:flex;gap:10px;margin-top:12px">
-      <button id="saveApi" class="btn">Save Keys (local)</button>
-      <div id="apiSaved" class="small" style="color:#8ff0b0"></div>
-    </div>
+        <ul id="indList" class="chip-list"></ul>
 
-    <div class="hr"></div>
-    <div class="small">Security: Keys सिर्फ आपके browser के <b>localStorage</b> में रहते हैं; server को नहीं भेजे जाते. Public site पर असली keys न डालें.</div>
-  </section>
+        <div class="row wrap">
+          <button id="btnSaveStrat" class="btn">Save Strategy</button>
+          <button id="btnExport" class="btn">Export JSON</button>
+          <label class="btn file">
+            Import JSON
+            <input id="fileImport" type="file" accept="application/json" hidden />
+          </label>
+        </div>
 
-  <!-- ===== Home Logic (localStorage only) ===== -->
+        <p class="subnote">
+          Popular: EMA length=20, RSI length=14, MACD fast=12,slow=26,signal=9 ...
+        </p>
+      </div>
+
+      <!-- API KEYS -->
+      <div class="card">
+        <h3>API Keys</h3>
+        <div class="grid-3 gap">
+          <label class="f">
+            <span>Exchange</span>
+            <select id="exSel">
+              <option>Binance</option>
+              <option>Bybit</option>
+              <option>OKX</option>
+            </select>
+          </label>
+          <label class="f">
+            <span>API Key</span>
+            <input id="apiKey" placeholder="xxxxxxxx" />
+          </label>
+          <label class="f">
+            <span>API Secret</span>
+            <div class="pw">
+              <input id="apiSecret" type="password" placeholder="********" />
+              <button id="togglePw" class="btn ghost">Show</button>
+            </div>
+          </label>
+        </div>
+        <button id="btnSaveKeys" class="btn start">Save Keys (local)</button>
+        <p class="subnote">Keys sirf tumhare browser ke <b>localStorage</b> me rahenge.
+          Server ko nahi bheje jaate. Public site par asli keys share na karein.</p>
+      </div>
+    </section>
+
+    <!-- ===== MARKET (Chart) ===== -->
+    <section id="market" class="page">
+      <div class="card">
+        <h2>Market</h2>
+
+        <div class="grid-3 gap">
+          <label class="f">
+            <span>Pair</span>
+            <select id="mPair">
+              <option value="BTCUSDT">BTC/USDT</option>
+              <option value="ETHUSDT">ETH/USDT</option>
+              <option value="SOLUSDT">SOL/USDT</option>
+              <option value="XRPUSDT">XRP/USDT</option>
+              <option value="ADAUSDT">ADA/USDT</option>
+            </select>
+          </label>
+          <div class="f">
+            <span>Interval</span>
+            <div class="seg" id="mTFs">
+              <button data-tf="1m">1m</button>
+              <button data-tf="5m" class="active">5m</button>
+              <button data-tf="15m">15m</button>
+              <button data-tf="1h">1h</button>
+              <button data-tf="4h">4h</button>
+            </div>
+          </div>
+          <div class="f">
+            <span>&nbsp;</span>
+            <div class="right small">USDT</div>
+          </div>
+        </div>
+
+        <!-- Chart container (navbar के नीचे, compact) -->
+        <div class="tv-wrap">
+          <div id="tvChart" class="tv-chart"></div>
+          <!-- नीचे थोड़ी खाली space रखी है (volume हटाने के बाद भी height वही) -->
+          <div class="tv-bottom-blank"></div>
+        </div>
+
+        <p class="subnote">Compact mode — top toolbar &amp; left tools hidden for clean view.</p>
+      </div>
+    </section>
+
+    <!-- ===== TRADE / DISCOVER / ACCOUNT (placeholders – tum apna content daal sakte ho) ===== -->
+    <section id="trade" class="page">
+      <div class="card"><h2>Trade</h2></div>
+    </section>
+    <section id="discover" class="page">
+      <div class="card"><h2>Discover</h2></div>
+    </section>
+    <section id="account" class="page">
+      <div class="card"><h2>My Account</h2></div>
+    </section>
+  </main>
+
   <script>
-    const LS_CFG='jk_cfg', LS_STRAT='jk_strategy', LS_INDS='jk_indicators', LS_API='jk_api';
-    const $=id=>document.getElementById(id);
+    /* ===== Helpers ===== */
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    const LS = {
+      get: (k, v=null)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? v }catch(e){ return v } },
+      set: (k,v)=> localStorage.setItem(k, JSON.stringify(v))
+    };
 
-    // --- ALGO SETUP ---
-    const pair=$('pair'), tf=$('tf'), risk=$('risk'), size=$('size'), statusEl=$('algoStatus'), savedCfg=$('savedCfg');
-    let cfg = JSON.parse(localStorage.getItem(LS_CFG)||'{}');
-    cfg = Object.assign({running:false,pair:'BTCUSDT',tf:'5m',risk:'',size:''}, cfg);
-    function renderCfg(){ pair.value=cfg.pair; tf.value=cfg.tf; risk.value=cfg.risk||''; size.value=cfg.size||''; statusEl.textContent=cfg.running?'Running':'Stopped'; statusEl.className='badge '+(cfg.running?'ok':'mute'); }
-    function saveCfg(){ localStorage.setItem(LS_CFG, JSON.stringify(cfg)); savedCfg.textContent='Saved'; setTimeout(()=>savedCfg.textContent='',1000); }
-    renderCfg();
-    pair.onchange=()=>{cfg.pair=pair.value; saveCfg();};
-    tf.onchange  =()=>{cfg.tf=tf.value; saveCfg();};
-    risk.oninput=()=>{cfg.risk=risk.value; saveCfg();};
-    size.oninput=()=>{cfg.size=size.value; saveCfg();};
-    $('start').onclick=()=>{cfg.running=true; saveCfg(); renderCfg();};
-    $('stop').onclick =()=>{cfg.running=false; saveCfg(); renderCfg();};
+    /* ===== Router (hash) + Navbar active underline ===== */
+    const pages = ["home","market","trade","discover","account"];
+    const tabUnderline = $("#tabUnderline");
+    const tabEls = [...$$(".tabs .tab")];
 
-    // --- STRATEGY & INDICATORS ---
-    const pine=$('pine'), indName=$('indName'), indArgs=$('indArgs'), indList=$('indList');
-    pine.value = localStorage.getItem(LS_STRAT)||'';
-    function loadInds(){ return JSON.parse(localStorage.getItem(LS_INDS)||'[]'); }
-    function saveInds(arr){ localStorage.setItem(LS_INDS, JSON.stringify(arr)); }
-    function renderInds(){
-      const L=loadInds(); indList.innerHTML='';
-      L.forEach((it,i)=>{ const li=document.createElement('li'); li.className='ind-item';
-        li.innerHTML=`<div><b>${it.name}</b> <span class="small">${it.args||''}</span></div><button class="btn warn" data-i="${i}">Remove</button>`;
-        indList.appendChild(li);
-      });
-      indList.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i; const L=loadInds(); L.splice(i,1); saveInds(L); renderInds();});
+    function setActiveTab(hash){
+      const sec = (hash||"#home").replace("#","");
+      tabEls.forEach(a=>a.classList.toggle("active", a.dataset.section===sec));
+      // underline position
+      const act = tabEls.find(a=>a.classList.contains("active"));
+      if (act){
+        const r = act.getBoundingClientRect();
+        const pr = act.parentElement.getBoundingClientRect();
+        tabUnderline.style.width = r.width+"px";
+        tabUnderline.style.transform = `translateX(${r.left - pr.left}px)`;
+      }
     }
-    renderInds();
-    $('addInd').onclick=()=>{ const name=indName.value.trim(); if(!name) return; const args=indArgs.value.trim(); const L=loadInds(); if(L.length>=5){alert('Max 5 indicators');return;} L.push({name, args}); saveInds(L); renderInds(); indName.value=''; indArgs.value=''; };
-    $('saveStrat').onclick=()=>{ localStorage.setItem(LS_STRAT, pine.value); $('stratSaved').textContent='Strategy saved'; setTimeout(()=>$('stratSaved').textContent='',1000); };
+    function showSection(){
+      const sec = (location.hash||"#home").replace("#","");
+      pages.forEach(p=> $("#"+p).style.display = (p===sec?"block":"none"));
+      setActiveTab("#"+sec);
+      LS.set("lastPage", sec);
+      if(sec==="market") mountTV(); // ensure chart exists
+    }
 
-    // Export/Import
-    $('exportCfg').onclick=()=>{
-      const data={cfg, strategy: pine.value, indicators: loadInds(), api: JSON.parse(localStorage.getItem(LS_API)||'{}')};
-      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=url; a.download='jk-export.json'; a.click(); URL.revokeObjectURL(url);
-    };
-    $('importFile').onchange=(e)=>{
-      const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
-      rd.onload=()=>{ try{ const obj=JSON.parse(rd.result);
-        if(obj.cfg){cfg=obj.cfg; saveCfg(); renderCfg();}
-        if('strategy' in obj){ pine.value=obj.strategy||''; localStorage.setItem(LS_STRAT, pine.value); }
-        if(Array.isArray(obj.indicators)){ localStorage.setItem(LS_INDS, JSON.stringify(obj.indicators)); renderInds(); }
-        if(obj.api){ localStorage.setItem(LS_API, JSON.stringify(obj.api)); renderApi(); }
-        alert('Import OK');
-      }catch(_){ alert('Invalid JSON'); } };
-      rd.readAsText(f);
-    };
+    window.addEventListener("resize", ()=>setActiveTab(location.hash));
+    window.addEventListener("hashchange", showSection);
 
-    // --- API KEYS (local only) ---
-    const exch=$('exch'), apiKey=$('apiKey'), apiSec=$('apiSec');
-    function loadApi(){ return JSON.parse(localStorage.getItem(LS_API)||'{"exch":"Binance","apiKey":"","apiSec":""}'); }
-    function saveApi(a){ localStorage.setItem(LS_API, JSON.stringify(a)); }
-    function renderApi(){ const a=loadApi(); exch.value=a.exch; apiKey.value=a.apiKey||''; apiSec.value=a.apiSec||''; $('apiSaved').textContent='Saved'; setTimeout(()=>$('apiSaved').textContent='',1000);}
-    renderApi();
-    $('saveApi').onclick=()=>{ saveApi({exch:exch.value, apiKey:apiKey.value, apiSec:apiSec.value}); renderApi(); };
-    $('toggleSec').onclick=()=>{ apiSec.type = apiSec.type==='password' ? 'text':'password'; $('toggleSec').textContent = apiSec.type==='password' ? 'Show':'Hide'; };
+    // First load
+    const savedPage = LS.get("lastPage","home");
+    if(!location.hash) location.hash = "#"+savedPage;
+    showSection();
+
+    /* ===== Algo: Start / Stop (demo only) ===== */
+    const btnStart=$("#btnStart"), btnStop=$("#btnStop"), statusEl=$("#algoStatus");
+    const pairSel=$("#pairSel"), tfSel=$("#tfSel"), riskPct=$("#riskPct"), posSize=$("#posSize");
+
+    function saveAlgo(){
+      LS.set("algo", {pair:pairSel.value, tf:tfSel.value, risk:riskPct.value, size:posSize.value});
+    }
+    function loadAlgo(){
+      const a = LS.get("algo", null);
+      if(a){ pairSel.value=a.pair; tfSel.value=a.tf; riskPct.value=a.risk; posSize.value=a.size; }
+      const run = LS.get("algoRun", false);
+      statusEl.textContent = run ? "Running" : "Stopped";
+      statusEl.classList.toggle("green", run);
+      statusEl.classList.toggle("red", !run);
+    }
+    btnStart.onclick=()=>{ LS.set("algoRun", true); loadAlgo(); };
+    btnStop.onclick =()=>{ LS.set("algoRun", false); loadAlgo(); };
+    [pairSel,tfSel,riskPct,posSize].forEach(el=>el.addEventListener("change", saveAlgo));
+    loadAlgo();
+
+    /* ===== Strategy & Indicators (local only) ===== */
+    const pineBox=$("#pineBox"), indName=$("#indName"), indParams=$("#indParams"), indList=$("#indList");
+    const btnAddInd=$("#btnAddInd"), btnSaveStrat=$("#btnSaveStrat"), btnExport=$("#btnExport");
+    const fileImport=$("#fileImport");
+
+    function loadStrat(){
+      const s = LS.get("strat",{pine:"", indicators:[]});
+      pineBox.value = s.pine || "";
+      indList.innerHTML = "";
+      (s.indicators||[]).forEach((it,idx)=>addChip(it, idx));
+    }
+    function saveStrat(){
+      const chips=[...indList.querySelectorAll("li")].map(li=>({name:li.dataset.name,params:li.dataset.params}));
+      LS.set("strat",{pine:pineBox.value, indicators:chips});
+    }
+    function addChip(obj, idx){
+      const li=document.createElement("li");
+      li.className="chip";
+      li.dataset.name=obj.name; li.dataset.params=obj.params;
+      li.innerHTML = `<span>${obj.name} <small>${obj.params||""}</small></span>
+                      <button class="x">✕</button>`;
+      li.querySelector(".x").onclick=()=>{ li.remove(); saveStrat(); };
+      indList.appendChild(li);
+    }
+    btnAddInd.onclick=()=>{
+      if(!indName.value) return;
+      addChip({name:indName.value, params:indParams.value||""});
+      indName.value=""; indParams.value="";
+      saveStrat();
+    };
+    btnSaveStrat.onclick=saveStrat;
+    btnExport.onclick=()=>{
+      saveStrat();
+      const data=LS.get("strat",{});
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob); a.download="jk-strategy.json"; a.click();
+    };
+    fileImport.onchange=e=>{
+      const f=e.target.files?.[0]; if(!f) return;
+      const r=new FileReader();
+      r.onload=()=>{ try{ LS.set("strat", JSON.parse(r.result)); loadStrat(); }catch(err){ alert("Invalid JSON"); } };
+      r.readAsText(f);
+    };
+    loadStrat();
+
+    /* ===== API Keys (local only) ===== */
+    const exSel=$("#exSel"), apiKey=$("#apiKey"), apiSecret=$("#apiSecret"), togglePw=$("#togglePw"), btnSaveKeys=$("#btnSaveKeys");
+    function loadKeys(){
+      const k=LS.get("api",{ex:"Binance", key:"", sec:""});
+      exSel.value=k.ex; apiKey.value=k.key; apiSecret.value=k.sec;
+    }
+    function saveKeys(){
+      LS.set("api",{ex:exSel.value, key:apiKey.value, sec:apiSecret.value});
+      btnSaveKeys.classList.add("pulse"); setTimeout(()=>btnSaveKeys.classList.remove("pulse"),600);
+    }
+    togglePw.onclick=()=>{ apiSecret.type = (apiSecret.type==="password"?"text":"password"); };
+    btnSaveKeys.onclick=saveKeys; loadKeys();
+
+    /* ===== TradingView Chart (Market) ===== */
+    let tvWidget = null;
+    const mPair=$("#mPair"); const mTFs=$("#mTFs");
+    function tvSymbol(){ return "BINANCE:"+ mPair.value; }
+    function tvTF(){ return (mTFs.querySelector(".active")?.dataset.tf)||"5m"; }
+
+    function mountTV(){
+      // remember selections
+      const s=LS.get("mkt",{pair:mPair.value, tf:tvTF()});
+      mPair.value=s.pair;
+      [...mTFs.children].forEach(b=>b.classList.toggle("active", b.dataset.tf===s.tf));
+
+      // (re)create widget
+      if(tvWidget && tvWidget.remove) tvWidget.remove();
+      tvWidget = new TradingView.widget({
+        autosize: true,
+        symbol: tvSymbol(),
+        interval: tfMap(tvTF()),
+        container_id: "tvChart",
+        hide_top_toolbar: true,
+        hide_legend: true,
+        hide_side_toolbar: true,
+        allow_symbol_change: false,
+        studies: [],              // volume हटाया
+        theme: "dark",
+        timezone: "Etc/UTC",
+        locale: "en",
+        backgroundColor: "#0f0f10",
+        gridColor: "rgba(128,128,128,0.1)",
+      });
+    }
+    function tfMap(tf){        // TV interval mapping
+      return ({ "1m":"1", "5m":"5", "15m":"15", "1h":"60", "4h":"240" })[tf] || "5";
+    }
+
+    mPair.addEventListener("change", ()=>{
+      LS.set("mkt",{pair:mPair.value, tf:tvTF()});
+      mountTV();
+    });
+    mTFs.addEventListener("click",(e)=>{
+      if(e.target.tagName!=="BUTTON") return;
+      [...mTFs.children].forEach(b=>b.classList.remove("active"));
+      e.target.classList.add("active");
+      LS.set("mkt",{pair:mPair.value, tf:tvTF()});
+      mountTV();
+    });
+
+    // first chart mount happens in showSection() when #market visible
   </script>
 </body>
-</html>
+      </html>
