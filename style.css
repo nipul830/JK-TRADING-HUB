@@ -1,28 +1,24 @@
-/* ===== Algo UI ===== */
-.card{background:#151515;border:1px solid #2a2a2a;border-radius:14px;padding:16px;color:#eaeaea}
-.algo-wrap{max-width: 900px;margin: 16px auto}
-.algo-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.algo-head h2{margin:0;font-size:24px}
-.badge{padding:4px 10px;border-radius:999px;font-size:12px}
-.badge.running{background:#103b21;color:#37d67a}
-.badge.stopped{background:#3b1010;color:#ff6b6b}
-.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
-@media (max-width:560px){.grid-2{grid-template-columns:1fr}}
+/* === Home: Algo + Strategy + API === */
+.section {max-width:980px;margin:18px auto}
+.section h3{margin:0 0 10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .f{display:flex;flex-direction:column;gap:6px}
-.f select,.f input{background:#0f0f0f;border:1px solid #333;color:#eaeaea;padding:10px;border-radius:10px}
+.f span{font-size:12px;color:#9aa7b3}
+.input, .select, .btn{background:#14181c;color:#e9f3ff;border:1px solid #2b3642;border-radius:10px;padding:10px}
+.btn.primary{background:#1d4ed8;border-color:#365ec5}
+.btn.warn{background:#7a1d1d;border-color:#9b2c2c}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px}
+.badge.ok{background:#10351f;color:#8ff0b0;border:1px solid #1f5a36}
+.badge.mute{background:#2a2a2a;color:#bbb;border:1px solid #3a3a3a}
 
-.row{display:flex;gap:10px;align-items:center}
-.gap{gap:10px}
-.btn{cursor:pointer;border:none;border-radius:10px;padding:10px 14px;background:#2a2a2a;color:#eaeaea}
-.btn.green{background:#1c5f37}
-.btn.red{background:#6b1f1f}
-.btn.ghost{background:transparent;border:1px solid #444}
-.btn:disabled{opacity:.6;cursor:not-allowed}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ta{width:100%;min-height:180px;resize:vertical}
+.ind-list{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.ind-item{display:flex;align-items:center;justify-content:space-between;background:#11161b;border:1px solid #28323c;border-radius:10px;padding:10px}
+.ind-item b{font-weight:600}
+.small{font-size:12px;color:#9aa7b3}
+.hr{height:1px;background:#26313c;margin:14px 0}
 
-.algo-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
-.algo-stats div{background:#0f0f0f;border:1px solid #2a2a2a;border-radius:10px;padding:10px}
-.algo-stats small{opacity:.7}
-.algo-stats strong{display:block;margin-top:4px;font-weight:700}
-
-.logbox{background:#0c0c0c;border:1px solid #242424;border-radius:10px;padding:10px;max-height:260px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
-.mt{margin-top:14px}
+.api-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.reveal{cursor:pointer;font-size:12px;color:#9aa7b3}
+.saved{font-size:12px;color:#8ff0b0}
