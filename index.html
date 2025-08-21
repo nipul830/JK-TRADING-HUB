@@ -1,22 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>JK Trading Hub – Home</title>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JK Trading Hub — Home</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Navbar -->
-  <div class="tabs">
-    <a class="tab active" href="index.html">Home</a>
+
+  <!-- ===== NAVBAR (common) ===== -->
+  <nav class="tabs">
+    <a class="tab" href="index.html">Home</a>
     <a class="tab" href="market.html">Market</a>
     <a class="tab" href="trade.html">Trade</a>
     <a class="tab" href="discover.html">Discover</a>
-    <a class="tab" href="account.html">Account</a>
-  </div>
+    <a class="tab" href="account.html">My Account</a>
+  </nav>
+  <script>
+    (function(){var f=location.pathname.split('/').pop()||'index.html';
+      document.querySelectorAll('.tabs .tab').forEach(a=>{
+        if(a.getAttribute('href')===f) a.classList.add('active');
+      });
+    })();
+  </script>
 
-  <!-- ================= ALGO SETUP ================= -->
+  <!-- ===== ALGO SETUP ===== -->
   <section class="card section" id="algoBox">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <h3 style="margin:0">JK ALGO Setup</h3>
@@ -64,16 +72,16 @@
     </div>
 
     <div class="hr"></div>
-    <div class="small">Note: Ye UI frontend-only है; koi order execute नहीं karta. Start/Stop & settings <b>localStorage</b> में save होते हैं.</div>
+    <div class="small">Frontend‑only UI. Settings <b>localStorage</b> me save hote hain. Real trading later plug karenge.</div>
   </section>
 
-  <!-- ================= STRATEGY & INDICATORS ================= -->
+  <!-- ===== STRATEGY & INDICATORS ===== -->
   <section class="card section" id="stratBox">
-    <h3 style="margin:0 0 10px">Strategy &amp; Indicators</h3>
+    <h3>Strategy &amp; Indicators</h3>
 
     <div class="grid-3">
       <div class="f">
-        <span>Pine-like Strategy (paste code)</span>
+        <span>Pine‑like Strategy (paste code)</span>
         <textarea id="pine" class="input ta" spellcheck="false" placeholder="//@version=5
 indicator('JK Demo', overlay=true)
 emaFast = ta.ema(close, 9)
@@ -94,7 +102,7 @@ short = ta.crossunder(emaFast, emaSlow)"></textarea>
       </div>
 
       <div class="f">
-        <span>Quick Actions</span>
+        <span>Actions</span>
         <button id="saveStrat" class="btn">Save Strategy</button>
         <button id="exportCfg" class="btn">Export JSON</button>
         <label class="f">
@@ -106,9 +114,9 @@ short = ta.crossunder(emaFast, emaSlow)"></textarea>
     </div>
   </section>
 
-  <!-- ================= API KEYS ================= -->
+  <!-- ===== API KEYS ===== -->
   <section class="card section" id="apiBox">
-    <h3 style="margin:0 0 10px">API Keys</h3>
+    <h3>API Keys</h3>
 
     <div class="api-row">
       <label class="f">
@@ -131,146 +139,82 @@ short = ta.crossunder(emaFast, emaSlow)"></textarea>
         <span>API Secret</span>
         <div style="display:flex;gap:8px;align-items:center">
           <input id="apiSec" class="input" type="password" placeholder="********" style="flex:1" />
-          <span id="toggleSec" class="reveal">Show</span>
+          <span id="toggleSec" class="small" style="cursor:pointer">Show</span>
         </div>
       </label>
     </div>
 
     <div style="display:flex;gap:10px;margin-top:12px">
       <button id="saveApi" class="btn">Save Keys (local)</button>
-      <div id="apiSaved" class="saved"></div>
+      <div id="apiSaved" class="small" style="color:#8ff0b0"></div>
     </div>
 
     <div class="hr"></div>
-    <div class="small">Security: Keys सिर्फ आपके browser के <b>localStorage</b> में रहते हैं; server को नहीं भेजे जाते. Public site पर असली keys use न करें.</div>
+    <div class="small">Security: Keys सिर्फ आपके browser के <b>localStorage</b> में रहते हैं; server को नहीं भेजे जाते. Public site पर असली keys न डालें.</div>
   </section>
 
+  <!-- ===== Home Logic (localStorage only) ===== -->
   <script>
-    // ===== LocalStorage helpers =====
-    const LS_CFG   = 'jk_cfg';
-    const LS_STRAT = 'jk_strategy';
-    const LS_INDS  = 'jk_indicators';
-    const LS_API   = 'jk_api';
+    const LS_CFG='jk_cfg', LS_STRAT='jk_strategy', LS_INDS='jk_indicators', LS_API='jk_api';
+    const $=id=>document.getElementById(id);
 
-    const $ = id => document.getElementById(id);
+    // --- ALGO SETUP ---
+    const pair=$('pair'), tf=$('tf'), risk=$('risk'), size=$('size'), statusEl=$('algoStatus'), savedCfg=$('savedCfg');
+    let cfg = JSON.parse(localStorage.getItem(LS_CFG)||'{}');
+    cfg = Object.assign({running:false,pair:'BTCUSDT',tf:'5m',risk:'',size:''}, cfg);
+    function renderCfg(){ pair.value=cfg.pair; tf.value=cfg.tf; risk.value=cfg.risk||''; size.value=cfg.size||''; statusEl.textContent=cfg.running?'Running':'Stopped'; statusEl.className='badge '+(cfg.running?'ok':'mute'); }
+    function saveCfg(){ localStorage.setItem(LS_CFG, JSON.stringify(cfg)); savedCfg.textContent='Saved'; setTimeout(()=>savedCfg.textContent='',1000); }
+    renderCfg();
+    pair.onchange=()=>{cfg.pair=pair.value; saveCfg();};
+    tf.onchange  =()=>{cfg.tf=tf.value; saveCfg();};
+    risk.oninput=()=>{cfg.risk=risk.value; saveCfg();};
+    size.oninput=()=>{cfg.size=size.value; saveCfg();};
+    $('start').onclick=()=>{cfg.running=true; saveCfg(); renderCfg();};
+    $('stop').onclick =()=>{cfg.running=false; saveCfg(); renderCfg();};
 
-    // ===== ALGO SETUP =====
-    const pair=$('pair'), tf=$('tf'), risk=$('risk'), size=$('size');
-    const statusEl=$('algoStatus'), savedCfg=$('savedCfg');
-
-    function loadCfg(){
-      const raw = localStorage.getItem(LS_CFG);
-      return raw ? JSON.parse(raw) : {running:false,pair:'BTCUSDT',tf:'5m',risk:'',size:''};
-    }
-    function saveCfg(cfg){ localStorage.setItem(LS_CFG, JSON.stringify(cfg)); }
-    function renderCfg(cfg){
-      pair.value=cfg.pair; tf.value=cfg.tf; risk.value=cfg.risk||''; size.value=cfg.size||'';
-      if(cfg.running){ statusEl.textContent='Running'; statusEl.className='badge ok'; }
-      else{ statusEl.textContent='Stopped'; statusEl.className='badge mute'; }
-      savedCfg.textContent='Saved';
-      setTimeout(()=>savedCfg.textContent='',1200);
-    }
-    let cfg = loadCfg(); renderCfg(cfg);
-
-    pair.onchange=()=>{ cfg.pair=pair.value; saveCfg(cfg); };
-    tf.onchange  =()=>{ cfg.tf=tf.value;     saveCfg(cfg); };
-    risk.oninput=()=>{ cfg.risk=risk.value;  saveCfg(cfg); };
-    size.oninput=()=>{ cfg.size=size.value;  saveCfg(cfg); };
-
-    $('start').onclick=()=>{ cfg.running=true; saveCfg(cfg); renderCfg(cfg); };
-    $('stop').onclick =()=>{ cfg.running=false; saveCfg(cfg); renderCfg(cfg); };
-
-    // ===== STRATEGY & INDICATORS =====
+    // --- STRATEGY & INDICATORS ---
     const pine=$('pine'), indName=$('indName'), indArgs=$('indArgs'), indList=$('indList');
-
-    function loadStrat(){ return localStorage.getItem(LS_STRAT) || ''; }
-    function saveStrat(data){ localStorage.setItem(LS_STRAT, data); }
-    function loadInds(){ const r=localStorage.getItem(LS_INDS); return r?JSON.parse(r):[]; }
-    function saveInds(list){ localStorage.setItem(LS_INDS, JSON.stringify(list)); }
+    pine.value = localStorage.getItem(LS_STRAT)||'';
+    function loadInds(){ return JSON.parse(localStorage.getItem(LS_INDS)||'[]'); }
+    function saveInds(arr){ localStorage.setItem(LS_INDS, JSON.stringify(arr)); }
     function renderInds(){
-      const list = loadInds();
-      indList.innerHTML='';
-      list.forEach((it,idx)=>{
-        const li=document.createElement('li'); li.className='ind-item';
-        li.innerHTML=`<div><b>${it.name}</b> <span class="small">${it.args||''}</span></div>
-                      <button class="btn warn" data-i="${idx}">Remove</button>`;
+      const L=loadInds(); indList.innerHTML='';
+      L.forEach((it,i)=>{ const li=document.createElement('li'); li.className='ind-item';
+        li.innerHTML=`<div><b>${it.name}</b> <span class="small">${it.args||''}</span></div><button class="btn warn" data-i="${i}">Remove</button>`;
         indList.appendChild(li);
       });
-      // bind remove
-      indList.querySelectorAll('button').forEach(b=>{
-        b.onclick=()=>{ const i=+b.dataset.i; const L=loadInds(); L.splice(i,1); saveInds(L); renderInds(); };
-      });
+      indList.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i; const L=loadInds(); L.splice(i,1); saveInds(L); renderInds();});
     }
-
-    pine.value = loadStrat();
     renderInds();
+    $('addInd').onclick=()=>{ const name=indName.value.trim(); if(!name) return; const args=indArgs.value.trim(); const L=loadInds(); if(L.length>=5){alert('Max 5 indicators');return;} L.push({name, args}); saveInds(L); renderInds(); indName.value=''; indArgs.value=''; };
+    $('saveStrat').onclick=()=>{ localStorage.setItem(LS_STRAT, pine.value); $('stratSaved').textContent='Strategy saved'; setTimeout(()=>$('stratSaved').textContent='',1000); };
 
-    $('addInd').onclick=()=>{
-      const name = indName.value.trim();
-      if(!name) return;
-      const args = indArgs.value.trim();
-      const list = loadInds();
-      if(list.length>=5){ alert('Max 5 indicators'); return; }
-      list.push({name, args});
-      saveInds(list); renderInds();
-      indName.value=''; indArgs.value='';
-    };
-
-    $('saveStrat').onclick=()=>{
-      saveStrat(pine.value);
-      $('stratSaved').textContent='Strategy saved';
-      setTimeout(()=>{$('stratSaved').textContent='';},1200);
-    };
-
-    // Export / Import JSON (cfg + strategy + indicators)
+    // Export/Import
     $('exportCfg').onclick=()=>{
-      const blob = new Blob([JSON.stringify({
-        cfg: loadCfg(),
-        strategy: loadStrat(),
-        indicators: loadInds(),
-        api: loadApi()
-      }, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href=url; a.download='jk-export.json'; a.click(); URL.revokeObjectURL(url);
+      const data={cfg, strategy: pine.value, indicators: loadInds(), api: JSON.parse(localStorage.getItem(LS_API)||'{}')};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='jk-export.json'; a.click(); URL.revokeObjectURL(url);
     };
     $('importFile').onchange=(e)=>{
-      const f=e.target.files[0]; if(!f) return;
-      const r=new FileReader();
-      r.onload=()=>{
-        try{
-          const obj=JSON.parse(r.result);
-          if(obj.cfg){ cfg=obj.cfg; saveCfg(cfg); renderCfg(cfg); }
-          if(typeof obj.strategy==='string'){ pine.value=obj.strategy; saveStrat(obj.strategy); }
-          if(Array.isArray(obj.indicators)){ saveInds(obj.indicators); renderInds(); }
-          if(obj.api){ saveApi(obj.api); renderApi(); }
-          alert('Import OK');
-        }catch(err){ alert('Invalid JSON'); }
-      };
-      r.readAsText(f);
+      const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+      rd.onload=()=>{ try{ const obj=JSON.parse(rd.result);
+        if(obj.cfg){cfg=obj.cfg; saveCfg(); renderCfg();}
+        if('strategy' in obj){ pine.value=obj.strategy||''; localStorage.setItem(LS_STRAT, pine.value); }
+        if(Array.isArray(obj.indicators)){ localStorage.setItem(LS_INDS, JSON.stringify(obj.indicators)); renderInds(); }
+        if(obj.api){ localStorage.setItem(LS_API, JSON.stringify(obj.api)); renderApi(); }
+        alert('Import OK');
+      }catch(_){ alert('Invalid JSON'); } };
+      rd.readAsText(f);
     };
 
-    // ===== API KEYS (local only) =====
-    const exch=$('exch'), apiKey=$('apiKey'), apiSec=$('apiSec'), apiSaved=$('apiSaved');
-
-    function loadApi(){ const r=localStorage.getItem(LS_API); return r?JSON.parse(r):{exch:'Binance',apiKey:'',apiSec:''}; }
+    // --- API KEYS (local only) ---
+    const exch=$('exch'), apiKey=$('apiKey'), apiSec=$('apiSec');
+    function loadApi(){ return JSON.parse(localStorage.getItem(LS_API)||'{"exch":"Binance","apiKey":"","apiSec":""}'); }
     function saveApi(a){ localStorage.setItem(LS_API, JSON.stringify(a)); }
-    function renderApi(){
-      const a=loadApi();
-      exch.value=a.exch; apiKey.value=a.apiKey||''; apiSec.value=a.apiSec||'';
-      apiSaved.textContent='Saved';
-      setTimeout(()=>apiSaved.textContent='',1200);
-    }
+    function renderApi(){ const a=loadApi(); exch.value=a.exch; apiKey.value=a.apiKey||''; apiSec.value=a.apiSec||''; $('apiSaved').textContent='Saved'; setTimeout(()=>$('apiSaved').textContent='',1000);}
     renderApi();
-
-    $('saveApi').onclick=()=>{
-      saveApi({exch:exch.value, apiKey:apiKey.value, apiSec:apiSec.value});
-      renderApi();
-    };
-    $('toggleSec').onclick=()=>{
-      apiSec.type = apiSec.type==='password' ? 'text' : 'password';
-      $('toggleSec').textContent = apiSec.type==='password' ? 'Show' : 'Hide';
-    };
+    $('saveApi').onclick=()=>{ saveApi({exch:exch.value, apiKey:apiKey.value, apiSec:apiSec.value}); renderApi(); };
+    $('toggleSec').onclick=()=>{ apiSec.type = apiSec.type==='password' ? 'text':'password'; $('toggleSec').textContent = apiSec.type==='password' ? 'Show':'Hide'; };
   </script>
 </body>
 </html>
