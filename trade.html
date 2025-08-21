@@ -1,15 +1,26 @@
-<!DOCTYPE html><html lang="en"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Trade</title>
-<link rel="stylesheet" href="style.css"/>
-</head><body>
-  <header class="header"><nav class="nav">
-    <a href="index.html">Home</a><a href="market.html">Market</a>
-    <a href="trade.html">Trade</a><a href="discover.html">Discover</a>
-    <a href="account.html">My Account</a>
-  </nav></header>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>JK Trading Hub — Trade</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
 
-  <main class="main">
-    <div class="card"><h1>Trade</h1></div>
-  </main>
-</body></html>
+  <nav class="tabs">
+    <a class="tab" href="index.html">Home</a>
+    <a class="tab" href="market.html">Market</a>
+    <a class="tab" href="trade.html">Trade</a>
+    <a class="tab" href="discover.html">Discover</a>
+    <a class="tab" href="account.html">My Account</a>
+  </nav>
+  <script>(function(){var f=location.pathname.split('/').pop()||'trade.html';document.querySelectorAll('.tabs .tab').forEach(a=>{if(a.getAttribute('href')===f)a.classList.add('active');});})();</script>
+
+  <!-- Your trade content -->
+  <section class="card section">
+    <h3>Trade</h3>
+    <p class="small">Order form / live chart yahan add kar sakte ho.</p>
+  </section>
+
+</body>
+</html>
