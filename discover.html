@@ -1,32 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>JK Trading Hub — Discover</title>
-  <style>
-    :root{--bg:#0e0e0e;--card:#161616;--text:#f3f3f3;--muted:#9aa0a6}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-    .nav{position:sticky;top:0;background:#111;border-bottom:1px solid #222;display:flex;gap:6px;padding:10px 12px}
-    .nav a{color:#ddd;text-decoration:none;padding:10px 12px;border-radius:8px}
-    .nav a:hover,.nav a.active{background:#1f1f1f;color:#fff}
-    .wrap{max-width:1000px;margin:32px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid #222;border-radius:14px;padding:24px}
-    h1{margin:0 0 6px}.muted{color:var(--muted)}
-  </style>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <nav class="nav">
-    <a href="index.html">Home</a>
-    <a href="trade.html">Trade</a>
-    <a href="market.html">Market</a>
-    <a class="active" href="discover.html">Discover</a>
-    <a href="account.html">Account</a>
+
+  <nav class="tabs">
+    <a class="tab" href="index.html">Home</a>
+    <a class="tab" href="market.html">Market</a>
+    <a class="tab" href="trade.html">Trade</a>
+    <a class="tab" href="discover.html">Discover</a>
+    <a class="tab" href="account.html">My Account</a>
   </nav>
-  <main class="wrap">
-    <div class="card">
-      <h1>Discover</h1>
-      <div class="muted">Blank page. News/ideas/features yahan aayenge.</div>
-    </div>
-  </main>
+  <script>(function(){var f=location.pathname.split('/').pop()||'discover.html';document.querySelectorAll('.tabs .tab').forEach(a=>{if(a.getAttribute('href')===f)a.classList.add('active');});})();</script>
+
+  <!-- Your discover content -->
+  <section class="card section">
+    <h3>Discover</h3>
+    <p class="small">News / screeners / watchlists yahan dal lo.</p>
+  </section>
+
 </body>
 </html>
