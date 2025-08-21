@@ -1,206 +1,276 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>JK Trading Hub — Home</title>
-  <link rel="icon" href="icon.png" />
-  <style>
-    /* ====== Base (dark) ====== */
-    :root{
-      --bg:#0f0f10; --panel:#141416; --panel2:#0f1113;
-      --text:#e9e9ea; --muted:#a6a8ad; --b:#232428; --shadow:0 10px 28px rgba(0,0,0,.35);
-      --green:#2ecc71; --red:#ff6b6b; --brand:#6dc5ff;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,"Noto Sans",Arial}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:16px}
-
-    /* ====== Top Nav ====== */
-    .nav{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#101114 0%, #0f0f10 100%);border-bottom:1px solid var(--b)}
-    .nav .wrap{display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;padding:10px 16px}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
-    .tabs{display:flex;gap:10px;flex-wrap:wrap}
-    .tab{padding:8px 12px;border:1px solid var(--b);border-radius:10px;background:var(--panel2);color:var(--muted)}
-    .tab.active{background:#1d2630;color:#e9f3ff;border-color:#2b3642}
-
-    /* ====== Card / Headline ====== */
-    .hero{background:var(--panel);border:1px solid var(--b);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin-top:16px}
-    .hero h1{margin:0 0 6px;font-size:32px}
-    .hero p{margin:0;color:var(--muted)}
-
-    /* ====== ALGO BLOCK ====== */
-    .algo-wrap{max-width:980px;margin:18px auto 28px}
-    .card{background:var(--panel);border:1px solid var(--b);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-    .algo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-    .algo-head h2{margin:0;font-size:22px;letter-spacing:.2px}
-    .badge{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--b);color:var(--muted);background:#131516}
-    .badge.running{background:#0b3d21;border-color:#1c6b3a;color:#aef3c3}
-    .badge.stopped{background:#3d0b0b;border-color:#6b1c1c;color:#f3aeae}
-
-    .grid-2{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:10px}
-    .f{display:flex;flex-direction:column;gap:6px;min-width:140px}
-    .f span{color:var(--muted);font-size:12px}
-    select{appearance:none;background:var(--panel2);border:1px solid var(--b);color:var(--text);border-radius:12px;padding:10px 12px;outline:none}
-    .btns{display:flex;gap:10px;margin-top:6px}
-    .btn{border:1px solid var(--b);background:#16181b;color:#eee;padding:10px 14px;border-radius:12px;cursor:pointer}
-    .btn.primary{background:#123321;border-color:#2e7d32}
-    .btn.danger{background:#3d1a1a;border-color:#7d2e2e}
-
-    .live{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
-    .live .price{font-size:28px;font-weight:800;letter-spacing:.3px}
-    .signal{font-size:18px;font-weight:800}
-    .signal.buy{color:var(--green)}
-    .signal.sell{color:var(--red)}
-    .note{margin-top:6px;color:var(--muted);font-size:12px}
-
-    /* ====== Footer spacer ====== */
-    .spacer{height:80px}
-  </style>
+  <meta charset="UTF-8" />
+  <title>JK Trading Hub – Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Navbar -->
+  <div class="tabs">
+    <a class="tab active" href="index.html">Home</a>
+    <a class="tab" href="market.html">Market</a>
+    <a class="tab" href="trade.html">Trade</a>
+    <a class="tab" href="discover.html">Discover</a>
+    <a class="tab" href="account.html">Account</a>
+  </div>
 
-  <!-- Top nav -->
-  <div class="nav">
-    <div class="wrap">
-      <div class="brand">🚀 JK Trading Hub</div>
-      <div class="tabs">
-        <a class="tab active" href="index.html">Home</a>
-        <a class="tab" href="market.html">Market</a>
-        <a class="tab" href="trade.html">Trade</a>
-        <a class="tab" href="discover.html">Discover</a>
-        <a class="tab" href="account.html">Account</a>
+  <!-- ================= ALGO SETUP ================= -->
+  <section class="card section" id="algoBox">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <h3 style="margin:0">JK ALGO Setup</h3>
+      <span id="algoStatus" class="badge mute">Stopped</span>
+    </div>
+
+    <div class="row">
+      <label class="f">
+        <span>Pair</span>
+        <select id="pair" class="select">
+          <option value="BTCUSDT">BTC/USDT</option>
+          <option value="ETHUSDT">ETH/USDT</option>
+          <option value="SOLUSDT">SOL/USDT</option>
+          <option value="XRPUSDT">XRP/USDT</option>
+        </select>
+      </label>
+
+      <label class="f">
+        <span>Timeframe</span>
+        <select id="tf" class="select">
+          <option value="1m">1m</option>
+          <option value="5m" selected>5m</option>
+          <option value="15m">15m</option>
+          <option value="1h">1h</option>
+          <option value="4h">4h</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <label class="f">
+        <span>Risk per Trade (%)</span>
+        <input id="risk" type="number" step="0.1" min="0" class="input" placeholder="e.g. 1.0" />
+      </label>
+      <label class="f">
+        <span>Position Size (USDT)</span>
+        <input id="size" type="number" step="1" min="0" class="input" placeholder="e.g. 100" />
+      </label>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button id="start" class="btn primary">Start</button>
+      <button id="stop" class="btn warn">Stop</button>
+      <div id="savedCfg" class="small" style="margin-left:6px"></div>
+    </div>
+
+    <div class="hr"></div>
+    <div class="small">Note: Ye UI frontend-only है; koi order execute नहीं karta. Start/Stop & settings <b>localStorage</b> में save होते हैं.</div>
+  </section>
+
+  <!-- ================= STRATEGY & INDICATORS ================= -->
+  <section class="card section" id="stratBox">
+    <h3 style="margin:0 0 10px">Strategy &amp; Indicators</h3>
+
+    <div class="grid-3">
+      <div class="f">
+        <span>Pine-like Strategy (paste code)</span>
+        <textarea id="pine" class="input ta" spellcheck="false" placeholder="//@version=5
+indicator('JK Demo', overlay=true)
+emaFast = ta.ema(close, 9)
+emaSlow = ta.ema(close, 21)
+long  = ta.crossover(emaFast, emaSlow)
+short = ta.crossunder(emaFast, emaSlow)"></textarea>
+      </div>
+
+      <div class="f">
+        <span>Add Indicator (max 5)</span>
+        <div class="row" style="grid-template-columns:1fr 1fr">
+          <input id="indName" class="input" placeholder="e.g. EMA" />
+          <input id="indArgs" class="input" placeholder="e.g. length=20" />
+        </div>
+        <button id="addInd" class="btn">Add</button>
+        <ul id="indList" class="ind-list"></ul>
+        <div class="small">Popular: EMA length=20, RSI length=14, MACD fast=12,slow=26,signal=9…</div>
+      </div>
+
+      <div class="f">
+        <span>Quick Actions</span>
+        <button id="saveStrat" class="btn">Save Strategy</button>
+        <button id="exportCfg" class="btn">Export JSON</button>
+        <label class="f">
+          <span class="small">Import JSON</span>
+          <input id="importFile" type="file" accept="application/json" class="input" />
+        </label>
+        <div id="stratSaved" class="small"></div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="container">
-    <!-- Intro -->
-    <section class="hero">
-      <h1>JK Trading Hub</h1>
-      <p>Home par lightweight <b>JK‑ALGO</b> controls. Pair/Timeframe choose karke Start dabao — live price aayega aur demo BUY/SELL signal dikhega.</p>
-    </section>
+  <!-- ================= API KEYS ================= -->
+  <section class="card section" id="apiBox">
+    <h3 style="margin:0 0 10px">API Keys</h3>
 
-    <!-- === ALGO CONTROL (HOME) === -->
-    <section class="card algo-wrap">
-      <div class="algo-head">
-        <h2>JK ALGO</h2>
-        <span id="algoStatus" class="badge stopped">Stopped</span>
-      </div>
+    <div class="api-row">
+      <label class="f">
+        <span>Exchange</span>
+        <select id="exch" class="select">
+          <option>Binance</option>
+          <option>Bybit</option>
+          <option>OKX</option>
+        </select>
+      </label>
+      <div></div>
+    </div>
 
-      <div class="grid-2">
-        <label class="f">
-          <span>Pair</span>
-          <select id="pairSel">
-            <option value="BTCUSDT">BTC/USDT</option>
-            <option value="ETHUSDT">ETH/USDT</option>
-            <option value="SOLUSDT">SOL/USDT</option>
-            <option value="XRPUSDT">XRP/USDT</option>
-          </select>
-        </label>
-
-        <label class="f">
-          <span>Timeframe</span>
-          <select id="tfSel">
-            <option value="1m">1m</option>
-            <option value="5m" selected>5m</option>
-            <option value="15m">15m</option>
-            <option value="1h">1h</option>
-            <option value="4h">4h</option>
-          </select>
-        </label>
-
-        <div class="btns">
-          <button id="btnStart" class="btn primary">Start</button>
-          <button id="btnStop" class="btn danger">Stop</button>
+    <div class="api-row" style="margin-top:8px">
+      <label class="f">
+        <span>API Key</span>
+        <input id="apiKey" class="input" placeholder="xxxxxxxx" />
+      </label>
+      <label class="f">
+        <span>API Secret</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="apiSec" class="input" type="password" placeholder="********" style="flex:1" />
+          <span id="toggleSec" class="reveal">Show</span>
         </div>
-      </div>
+      </label>
+    </div>
 
-      <div class="live">
-        <div style="color:var(--muted);font-weight:700;letter-spacing:.2px" id="pairTitle">BTC/USDT</div>
-        <div class="price" id="livePrice">–</div>
-        <div class="signal" id="algoSignal">—</div>
-      </div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button id="saveApi" class="btn">Save Keys (local)</button>
+      <div id="apiSaved" class="saved"></div>
+    </div>
 
-      <div class="note">Demo signal logic used (just for UI). Real strategy plug‑in later.</div>
-    </section>
+    <div class="hr"></div>
+    <div class="small">Security: Keys सिर्फ आपके browser के <b>localStorage</b> में रहते हैं; server को नहीं भेजे जाते. Public site पर असली keys use न करें.</div>
+  </section>
 
-    <div class="spacer"></div>
-  </div>
-
-  <!-- ===== Logic (no external deps) ===== -->
   <script>
-  (()=>{
-    const pairSel = document.getElementById('pairSel');
-    const tfSel   = document.getElementById('tfSel');
-    const status  = document.getElementById('algoStatus');
-    const priceEl = document.getElementById('livePrice');
-    const sigEl   = document.getElementById('algoSignal');
-    const pairT   = document.getElementById('pairTitle');
+    // ===== LocalStorage helpers =====
+    const LS_CFG   = 'jk_cfg';
+    const LS_STRAT = 'jk_strategy';
+    const LS_INDS  = 'jk_indicators';
+    const LS_API   = 'jk_api';
 
-    let timer = null;
+    const $ = id => document.getElementById(id);
 
-    function fmt(n){
-      if(!isFinite(n)) return '–';
-      if(n >= 1000) return n.toLocaleString(undefined,{maximumFractionDigits:2});
-      return n.toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
+    // ===== ALGO SETUP =====
+    const pair=$('pair'), tf=$('tf'), risk=$('risk'), size=$('size');
+    const statusEl=$('algoStatus'), savedCfg=$('savedCfg');
+
+    function loadCfg(){
+      const raw = localStorage.getItem(LS_CFG);
+      return raw ? JSON.parse(raw) : {running:false,pair:'BTCUSDT',tf:'5m',risk:'',size:''};
+    }
+    function saveCfg(cfg){ localStorage.setItem(LS_CFG, JSON.stringify(cfg)); }
+    function renderCfg(cfg){
+      pair.value=cfg.pair; tf.value=cfg.tf; risk.value=cfg.risk||''; size.value=cfg.size||'';
+      if(cfg.running){ statusEl.textContent='Running'; statusEl.className='badge ok'; }
+      else{ statusEl.textContent='Stopped'; statusEl.className='badge mute'; }
+      savedCfg.textContent='Saved';
+      setTimeout(()=>savedCfg.textContent='',1200);
+    }
+    let cfg = loadCfg(); renderCfg(cfg);
+
+    pair.onchange=()=>{ cfg.pair=pair.value; saveCfg(cfg); };
+    tf.onchange  =()=>{ cfg.tf=tf.value;     saveCfg(cfg); };
+    risk.oninput=()=>{ cfg.risk=risk.value;  saveCfg(cfg); };
+    size.oninput=()=>{ cfg.size=size.value;  saveCfg(cfg); };
+
+    $('start').onclick=()=>{ cfg.running=true; saveCfg(cfg); renderCfg(cfg); };
+    $('stop').onclick =()=>{ cfg.running=false; saveCfg(cfg); renderCfg(cfg); };
+
+    // ===== STRATEGY & INDICATORS =====
+    const pine=$('pine'), indName=$('indName'), indArgs=$('indArgs'), indList=$('indList');
+
+    function loadStrat(){ return localStorage.getItem(LS_STRAT) || ''; }
+    function saveStrat(data){ localStorage.setItem(LS_STRAT, data); }
+    function loadInds(){ const r=localStorage.getItem(LS_INDS); return r?JSON.parse(r):[]; }
+    function saveInds(list){ localStorage.setItem(LS_INDS, JSON.stringify(list)); }
+    function renderInds(){
+      const list = loadInds();
+      indList.innerHTML='';
+      list.forEach((it,idx)=>{
+        const li=document.createElement('li'); li.className='ind-item';
+        li.innerHTML=`<div><b>${it.name}</b> <span class="small">${it.args||''}</span></div>
+                      <button class="btn warn" data-i="${idx}">Remove</button>`;
+        indList.appendChild(li);
+      });
+      // bind remove
+      indList.querySelectorAll('button').forEach(b=>{
+        b.onclick=()=>{ const i=+b.dataset.i; const L=loadInds(); L.splice(i,1); saveInds(L); renderInds(); };
+      });
     }
 
-    async function fetchPrice(sym){
-      // Binance public price
-      const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${sym}`, {cache:'no-store'});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      const j = await r.json();
-      return Number(j.price);
-    }
+    pine.value = loadStrat();
+    renderInds();
 
-    async function tick(){
-      const sym = pairSel.value;
-      try{
-        const p = await fetchPrice(sym);
-        priceEl.textContent = fmt(p);
-
-        // --- demo signal: fluctuate on price last digit + timeframe weight
-        const tf = tfSel.value;
-        const w  = ({'1m':1,'5m':2,'15m':3,'1h':4,'4h':5})[tf] || 1;
-        const buy = Math.round(p*100) % (2*w) === 0;
-
-        sigEl.textContent = buy ? 'BUY' : 'SELL';
-        sigEl.className   = 'signal ' + (buy?'buy':'sell');
-      }catch(e){
-        priceEl.textContent = '–';
-        sigEl.textContent   = 'Error';
-        sigEl.className     = 'signal';
-      }
-    }
-
-    function setPairTitle(){
-      const map = {BTCUSDT:'BTC/USDT',ETHUSDT:'ETH/USDT',SOLUSDT:'SOL/USDT',XRPUSDT:'XRP/USDT'};
-      pairT.textContent = map[pairSel.value] || pairSel.value;
-    }
-
-    document.getElementById('btnStart').onclick = ()=>{
-      if(timer) return;
-      status.textContent='Running';
-      status.className='badge running';
-      setPairTitle();
-      tick();
-      timer = setInterval(tick, 4000); // 4s
+    $('addInd').onclick=()=>{
+      const name = indName.value.trim();
+      if(!name) return;
+      const args = indArgs.value.trim();
+      const list = loadInds();
+      if(list.length>=5){ alert('Max 5 indicators'); return; }
+      list.push({name, args});
+      saveInds(list); renderInds();
+      indName.value=''; indArgs.value='';
     };
 
-    document.getElementById('btnStop').onclick = ()=>{
-      clearInterval(timer); timer=null;
-      status.textContent='Stopped';
-      status.className='badge stopped';
+    $('saveStrat').onclick=()=>{
+      saveStrat(pine.value);
+      $('stratSaved').textContent='Strategy saved';
+      setTimeout(()=>{$('stratSaved').textContent='';},1200);
     };
 
-    pairSel.onchange = ()=>{ setPairTitle(); if(timer) tick(); };
-    tfSel.onchange   = ()=>{ if(timer) tick(); };
+    // Export / Import JSON (cfg + strategy + indicators)
+    $('exportCfg').onclick=()=>{
+      const blob = new Blob([JSON.stringify({
+        cfg: loadCfg(),
+        strategy: loadStrat(),
+        indicators: loadInds(),
+        api: loadApi()
+      }, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download='jk-export.json'; a.click(); URL.revokeObjectURL(url);
+    };
+    $('importFile').onchange=(e)=>{
+      const f=e.target.files[0]; if(!f) return;
+      const r=new FileReader();
+      r.onload=()=>{
+        try{
+          const obj=JSON.parse(r.result);
+          if(obj.cfg){ cfg=obj.cfg; saveCfg(cfg); renderCfg(cfg); }
+          if(typeof obj.strategy==='string'){ pine.value=obj.strategy; saveStrat(obj.strategy); }
+          if(Array.isArray(obj.indicators)){ saveInds(obj.indicators); renderInds(); }
+          if(obj.api){ saveApi(obj.api); renderApi(); }
+          alert('Import OK');
+        }catch(err){ alert('Invalid JSON'); }
+      };
+      r.readAsText(f);
+    };
 
-    // Optional: auto-start on load (comment out if you don’t want)
-    // document.getElementById('btnStart').click();
-  })();
+    // ===== API KEYS (local only) =====
+    const exch=$('exch'), apiKey=$('apiKey'), apiSec=$('apiSec'), apiSaved=$('apiSaved');
+
+    function loadApi(){ const r=localStorage.getItem(LS_API); return r?JSON.parse(r):{exch:'Binance',apiKey:'',apiSec:''}; }
+    function saveApi(a){ localStorage.setItem(LS_API, JSON.stringify(a)); }
+    function renderApi(){
+      const a=loadApi();
+      exch.value=a.exch; apiKey.value=a.apiKey||''; apiSec.value=a.apiSec||'';
+      apiSaved.textContent='Saved';
+      setTimeout(()=>apiSaved.textContent='',1200);
+    }
+    renderApi();
+
+    $('saveApi').onclick=()=>{
+      saveApi({exch:exch.value, apiKey:apiKey.value, apiSec:apiSec.value});
+      renderApi();
+    };
+    $('toggleSec').onclick=()=>{
+      apiSec.type = apiSec.type==='password' ? 'text' : 'password';
+      $('toggleSec').textContent = apiSec.type==='password' ? 'Show' : 'Hide';
+    };
   </script>
 </body>
 </html>
