@@ -1,304 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>JK Trading Hub</title>
-  <link rel="icon" href="icon.png"/>
-  <link rel="stylesheet" href="style.css"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JK Trading Hub</title>
+
+<!-- TradingView library -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+
+<style>
+  :root{
+    --bg:#0f1218; --panel:#141922; --muted:#9aa3b2; --text:#e6ebf2;
+    --primary:#2d6cff; --pill:#1e2430; --accent:#36c98c; --danger:#e15b64;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 12px 48px}
+
+  /* Navbar */
+  .nav{position:sticky;top:0;z-index:20;background:rgba(15,18,24,.9);backdrop-filter:saturate(160%) blur(8px);
+       border-bottom:1px solid #1e2430}
+  .nav-inner{display:flex;align-items:center;gap:12px;padding:10px 12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .brand img{width:24px;height:24px}
+  .tabs{display:flex;gap:10px;margin-left:8px;overflow:auto}
+  .tab{white-space:nowrap;padding:10px 16px;border-radius:12px;background:transparent;color:var(--muted);
+       text-decoration:none;display:inline-flex;align-items:center;gap:8px;position:relative}
+  .tab.active{color:var(--text);background:#1b2230}
+  .tab.active::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:3px;border-radius:3px;background:var(--primary)}
+
+  /* Cards / sections */
+  h1,h2{margin:0 0 10px}
+  .card{background:var(--panel);border:1px solid #1f2733;border-radius:16px;padding:16px}
+  .muted{color:var(--muted)}
+
+  /* Market controls */
+  .row{display:flex;flex-wrap:wrap;gap:12px}
+  .field{flex:1 1 220px;min-width:220px}
+  .input, select{width:100%;background:#0e1420;border:1px solid #263143;border-radius:12px;color:var(--text);padding:12px 14px}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{background:var(--pill);color:var(--text);border:1px solid #2a3545;border-radius:12px;padding:10px 14px}
+  .seg button.active{background:var(--primary);border-color:var(--primary)}
+  .tv-wrap{margin-top:12px;border-radius:14px;border:1px solid #212b39;overflow:hidden;background:#0c111b}
+  .tv-chart{width:100%;height:540px}
+  .small{font-size:12px;color:var(--muted);text-align:right;margin-top:6px}
+
+  /* Pages */
+  .page{display:none;margin-top:16px}
+  .page.active{display:block}
+
+  @media (max-width:640px){
+    .tv-chart{height:480px}
+  }
+</style>
 </head>
 <body>
 
-  <!-- ===== NAVBAR (fixed) ===== -->
-  <header class="navbar">
+<!-- NAVBAR -->
+<div class="nav">
+  <div class="wrap nav-inner">
     <div class="brand">
-      <img src="icon.png" alt="logo"/>
-      <span>JK Trading Hub</span>
+      <img src="https://cdn-icons-png.flaticon.com/512/2721/2721279.png" alt="logo">
+      JK Trading Hub
     </div>
-    <nav class="tabs" id="tabs">
-      <a data-page="home"     href="#home">Home</a>
-      <a data-page="market"   href="#market">Market</a>
-      <a data-page="trade"    href="#trade">Trade</a>
-      <a data-page="discover" href="#discover">Discover</a>
-      <a data-page="account"  href="#account">My Account</a>
-      <div class="underline"></div>
-    </nav>
-  </header>
+    <div class="tabs" id="tabs">
+      <a class="tab active" data-page="home" href="#home">Home</a>
+      <a class="tab" data-page="market" href="#market">Market</a>
+      <a class="tab" data-page="trade" href="#trade">Trade</a>
+      <a class="tab" data-page="discover" href="#discover">Discover</a>
+      <a class="tab" data-page="account" href="#account">My Account</a>
+    </div>
+  </div>
+</div>
 
-  <main>
-    <!-- ===== HOME ===== -->
-    <section id="home" class="page active">
-      <div class="card">
-        <h2>JK ALGO Setup</h2>
-        <div class="grid-2">
-          <label class="f"><span>Pair</span>
-            <select id="pairSel">
-              <option value="BTCUSDT">BTC/USDT</option>
-              <option value="ETHUSDT">ETH/USDT</option>
-              <option value="SOLUSDT">SOL/USDT</option>
-              <option value="XRPUSDT">XRP/USDT</option>
-            </select>
-          </label>
-          <label class="f"><span>Timeframe</span>
-            <select id="tfSel">
-              <option>1m</option><option selected>5m</option>
-              <option>15m</option><option>1h</option><option>4h</option>
-            </select>
-          </label>
-        </div>
+<div class="wrap">
 
-        <div class="grid-2">
-          <label class="f"><span>Risk per Trade (%)</span><input id="riskPct" placeholder="e.g. 1.0"/></label>
-          <label class="f"><span>Position Size (USDT)</span><input id="posUSDT" placeholder="e.g. 100"/></label>
-        </div>
+  <!-- HOME -->
+  <section id="home" class="page active">
+    <div class="card">
+      <h1>JK Trading Hub</h1>
+      <p class="muted">Welcome! Navbar हमेशा top पर रहेगा. नीचे वाले Market tab में live chart है — pair और timeframe बदलते ही update होगा.</p>
+    </div>
+  </section>
 
-        <div class="seg">
-          <button id="btnStart">Start</button>
-          <button id="btnStop" class="danger">Stop</button>
-        </div>
+  <!-- MARKET -->
+  <section id="market" class="page">
+    <div class="card">
+      <h1>Market</h1>
 
-        <p class="small mute">Frontend‑only UI. Settings <b>localStorage</b> में सेव रहते हैं. वास्तविक order execute नहीं होते.</p>
-      </div>
-
-      <div class="card">
-        <h2>Strategy &amp; Indicators</h2>
-        <label class="f"><span>Pine‑like Strategy (paste code)</span>
-          <textarea id="pineBox" rows="4">//@version=5
-indicator('JK Demo', overlay=true)
-emaFast = ta.ema(close, 20)
-plot(emaFast)</textarea>
-        </label>
-
-        <div class="grid-3">
-          <input id="indName" placeholder="e.g. EMA"/>
-          <input id="indParam" placeholder="e.g. length=20"/>
-          <button id="btnAddInd">Add</button>
-        </div>
-
-        <ul id="chipList" class="chip-list"></ul>
-
-        <div class="seg">
-          <button id="btnSaveStrat">Save Strategy</button>
-          <button id="btnExport">Export JSON</button>
-          <label class="btn-file">
-            <input type="file" id="fileImport" accept=".json"/> Import JSON
-          </label>
+      <div class="row" style="margin-top:8px">
+        <div class="field">
+          <label class="muted">Pair</label>
+          <select id="mPair" class="input">
+            <option>BTC/USDT</option>
+            <option>ETH/USDT</option>
+            <option>SOL/USDT</option>
+            <option>XRP/USDT</option>
+          </select>
         </div>
       </div>
 
-      <div class="card">
-        <h2>API Keys</h2>
-        <div class="grid-3">
-          <label class="f"><span>Exchange</span>
-            <select id="exSel"><option>Binance</option></select>
-          </label>
-          <label class="f"><span>API Key</span><input id="apiKey" placeholder="xxxxxxxx"/></label>
-          <label class="f pw"><span>API Secret</span><input id="apiSec" type="password" placeholder="********"/><button id="pwShow">Show</button></label>
-        </div>
-        <button id="btnSaveKeys">Save Keys (local)</button>
-        <p class="small mute">Keys केवल आपके ब्राउजर के <b>localStorage</b> में सुरक्षित हैं; server पर नहीं भेजे जाते.</p>
+      <div class="seg" style="margin-top:10px">
+        <button data-tf="1">1m</button>
+        <button data-tf="5" class="active">5m</button>
+        <button data-tf="15">15m</button>
+        <button data-tf="60">1h</button>
+        <button data-tf="240">4h</button>
       </div>
-    </section>
 
-    <!-- ===== MARKET (TV chart placeholder) ===== -->
-    <section id="market" class="page">
-      <div class="card">
-        <h2>Market</h2>
-        <div class="grid-2">
-          <label class="f"><span>Pair</span>
-            <select id="mPair">
-              <option>BTC/USDT</option>
-              <option selected>ETH/USDT</option>
-              <option>SOL/USDT</option>
-              <option>XRP/USDT</option>
-            </select>
-          </label>
-          <div class="seg">
-            <button data-tf="1m">1m</button>
-            <button class="active" data-tf="5m">5m</button>
-            <button data-tf="15m">15m</button>
-            <button data-tf="1h">1h</button>
-            <button data-tf="4h">4h</button>
-          </div>
-        </div>
-
-        <div class="tv-wrap">
-          <div id="tv" class="tv-chart"></div>
-          <div class="tv-bottom-blank"></div>
-        </div>
-        <p class="small">Note: compact mode — top toolbar &amp; left tools hidden for clean view.</p>
+      <div class="tv-wrap">
+        <div id="tv" class="tv-chart"></div>
       </div>
-    </section>
+      <div class="small">Compact mode — top toolbar &amp; left tools hidden for clean view.</div>
+    </div>
+  </section>
 
-    <!-- ===== TRADE ===== -->
-    <section id="trade" class="page">
-      <div class="card"><h2>Trade</h2><p class="small">Yahan pe tum apna trading UI add kar sakte ho.</p></div>
-    </section>
+  <!-- TRADE (placeholder) -->
+  <section id="trade" class="page">
+    <div class="card"><h1>Trade</h1><p class="muted">Yahan aap later order UI आदि जोड़ सकते हो.</p></div>
+  </section>
 
-    <!-- ===== DISCOVER (NEWS) ===== -->
-    <section id="discover" class="page">
-      <div class="card">
-        <div class="card-head">
-          <h2>Market News</h2>
-          <div class="seg" id="newsFilters">
-            <button class="active" data-cat="all">All</button>
-            <button data-cat="crypto">Crypto</button>
-            <button data-cat="commodity:gold">Gold</button>
-            <button data-cat="commodity:crude">Crude</button>
-            <button data-cat="forex">Forex</button>
-            <button data-cat="indices">Indices</button>
-          </div>
-        </div>
-        <div class="right small"><button id="newsRefresh" class="btn">Refresh</button></div>
-        <div id="newsList" class="news-list"></div>
-      </div>
-    </section>
+  <!-- DISCOVER (placeholder/news area ready) -->
+  <section id="discover" class="page">
+    <div class="card"><h1>Discover</h1><p class="muted">Crypto / Gold / Crude news widgets यहाँ add कर सकते हैं.</p></div>
+  </section>
 
-    <!-- ===== ACCOUNT ===== -->
-    <section id="account" class="page">
-      <div class="card"><h2>My Account</h2><p class="small">Signup में दी गई details yahan दिखा सकते हैं.</p></div>
-    </section>
-  </main>
+  <!-- ACCOUNT (placeholder) -->
+  <section id="account" class="page">
+    <div class="card"><h1>My Account</h1><p class="muted">User details / API keys आदि.</p></div>
+  </section>
 
-  <!-- ===== SCRIPTS ===== -->
-  <script src="https://s3.tradingview.com/tv.js"></script>
-  <script>
-  // ===== Router (tabs) =====
-  const pages = [...document.querySelectorAll('.page')];
-  const links = [...document.querySelectorAll('.tabs a')];
-  const underline = document.querySelector('.tabs .underline');
+</div>
 
-  function activate(tab){
-    links.forEach(a=>a.classList.toggle('active', a.dataset.page===tab));
-    pages.forEach(p=>p.classList.toggle('active', p.id===tab));
-    const el = links.find(a=>a.dataset.page===tab) || links[0];
-    const r = el.getBoundingClientRect();
-    const pr = el.parentElement.getBoundingClientRect();
-    underline.style.width = r.width+'px';
-    underline.style.transform = `translateX(${r.left-pr.left}px)`;
-    localStorage.setItem('jk_tab', tab);
-    if(tab==='market') mountTV(); // ensure chart exists
-  }
+<!-- ====== SPA + TradingView logic ====== -->
+<script>
+/* ---------- SPA Navigation ---------- */
+const pages = [...document.querySelectorAll('.page')];
+const tabs  = [...document.querySelectorAll('.tab')];
 
-  function onHash(){
-    const tab = (location.hash||'#home').replace('#','');
-    activate(tab);
-  }
-  window.addEventListener('hashchange', onHash);
-  window.addEventListener('load', ()=>{
-    const saved = localStorage.getItem('jk_tab');
-    location.hash = '#'+(saved || 'home');
-    onHash();
+function showPage(name){
+  pages.forEach(p => p.classList.toggle('active', p.id === name));
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.page === name));
+  if(name==='market') setTimeout(tryMountOnVisible, 30);
+}
+function hashRoute(){
+  const name = (location.hash.replace('#','') || 'home');
+  showPage(name);
+}
+window.addEventListener('hashchange', hashRoute);
+document.addEventListener('DOMContentLoaded', hashRoute);
+
+/* ---------- TradingView Chart ---------- */
+let tvWidget = null;
+
+// "ETH/USDT" -> "ETHUSDT:BINANCE"
+function tvSymbol(txt){
+  let p = (txt || 'BTC/USDT').replace(/\s/g,'').toUpperCase();
+  p = p.replace('/','');
+  if(!/USDT$/.test(p)) p += 'USDT';
+  return p + ':BINANCE';
+}
+function setActiveTFButton(btn){
+  const wrap = document.querySelector('#market .seg');
+  if(!wrap) return;
+  [...wrap.children].forEach(x => x.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function mountTV(){
+  if(tvWidget) return;
+  const pairSel = document.getElementById('mPair');
+  const sym = tvSymbol(pairSel ? pairSel.value : 'BTC/USDT');
+
+  tvWidget = new TradingView.widget({
+    autosize:true,
+    symbol:sym,
+    interval:"5",
+    timezone:"Etc/UTC",
+    theme:"dark",
+    style:"1",
+    locale:"en",
+    container_id:"tv",
+    hide_top_toolbar:true,
+    allow_symbol_change:false,
+    withdateranges:false,
+    calendar:false
   });
 
-  // ===== TradingView minimal embed (compact) =====
-  let tvWidget;
-  function symbolMap(txt){
-    return (txt||'BTC/USDT').replace('/','USDT')+'T:BINANCE';
-  }
-  function tfMap(t){ return t; }
-
-  function mountTV(){
-    if(tvWidget){ return; }
-    const sym = symbolMap(document.getElementById('mPair').value);
-    tvWidget = new TradingView.widget({
-      autosize: true,
-      symbol: sym,
-      interval: "5",
-      container_id: "tv",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      hide_top_toolbar: true,
-      hide_legend: false,
-      allow_symbol_change: false,
-      withdateranges: false,
-      calendar: false,
-      studies: [],
-    });
-  }
-
-  // timeframe buttons
-  document.querySelector('#market .seg').addEventListener('click', (e)=>{
-    const b = e.target.closest('button[data-tf]');
-    if(!b||!tvWidget) return;
-    [...e.currentTarget.children].forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    tvWidget.chart().setResolution(b.dataset.tf, ()=>{});
+  // highlight default TF
+  const defBtn = document.querySelector('#market .seg button.active');
+  if(defBtn) setActiveTFButton(defBtn);
+}
+function tryMountOnVisible(){
+  const market = document.getElementById('market');
+  if(!market) return;
+  const visible = getComputedStyle(market).display!=='none' && market.offsetParent!==null;
+  if(visible){ mountTV(); return; }
+  const obs = new MutationObserver(() => {
+    const v = getComputedStyle(market).display!=='none' && market.offsetParent!==null;
+    if(v){ mountTV(); obs.disconnect(); }
   });
+  obs.observe(market,{attributes:true,attributeFilter:['class','style']});
+}
 
-  // pair change
-  document.getElementById('mPair').addEventListener('change', (e)=>{
+// pair change
+document.addEventListener('change', (e)=>{
+  if(e.target && e.target.id==='mPair'){
     if(!tvWidget) return;
-    tvWidget.chart().setSymbol(symbolMap(e.target.value), ()=>{});
-  });
+    tvWidget.chart().setSymbol(tvSymbol(e.target.value), ()=>{});
+  }
+});
+// timeframe change
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('#market .seg button[data-tf]');
+  if(!btn) return;
+  if(!tvWidget) return;
+  setActiveTFButton(btn);
+  tvWidget.chart().setResolution(btn.dataset.tf, ()=>{});
+});
 
-  // ===== News (Discover) =====
-  (function(){
-    const NEWS = [
-      {id:1, cat:'crypto',         title:'Bitcoin rebounds as funding stabilizes', sum:'BTC funding normalizes; traders eye next CPI prints.', time:'10 min ago', src:'Desk Wire'},
-      {id:2, cat:'commodity:gold', title:'Gold edges higher on safe-haven demand', sum:'Dollar softens; bullion holds above key support.', time:'22 min ago', src:'Commodities Daily'},
-      {id:3, cat:'commodity:crude',title:'Crude dips after inventory build',       sum:'API data shows larger‑than‑expected stockpile.', time:'35 min ago', src:'Energy Watch'},
-      {id:4, cat:'forex',          title:'USD/JPY slips as yields cool',            sum:'Traders watch BOJ comments this week.', time:'1 hr ago', src:'FX Street Brief'},
-      {id:5, cat:'indices',        title:'S&P futures flat before tech earnings',   sum:'Volatility remains subdued ahead of results.', time:'1 hr ago', src:'Index Desk'},
-      {id:6, cat:'crypto',         title:'ETH gas fees ease on lower activity',     sum:'Layer‑2 volumes steady; stakers remain net positive.', time:'2 hr ago', src:'On‑Chain Note'}
-    ];
-    const listEl = document.getElementById('newsList');
-    const filtersEl = document.getElementById('newsFilters');
-    const btnRefresh = document.getElementById('newsRefresh');
-
-    function tag(cat){
-      if(cat.startsWith('commodity:')){
-        const what = cat.split(':')[1];
-        return `<span class="tag commodity">${what.toUpperCase()}</span>`;
-      }
-      const map = {crypto:'Crypto', forex:'Forex', indices:'Indices'};
-      const label = map[cat]||cat;
-      const cls = (cat==='crypto')?'crypto':(cat==='forex')?'commodity':'commodity';
-      return `<span class="tag ${cls}">${label}</span>`;
-    }
-    function card(n){
-      return `<article class="news-item">
-        ${tag(n.cat)}
-        <h3>${n.title}</h3>
-        <p>${n.sum}</p>
-        <div class="small right">${n.src} • ${n.time}</div>
-      </article>`;
-    }
-    function render(cat='all'){
-      const rows = NEWS.filter(n=>cat==='all' ? true : n.cat===cat);
-      listEl.innerHTML = rows.length ? rows.map(card).join('') : `<div class="small">No stories.</div>`;
-    }
-    filtersEl.addEventListener('click', (e)=>{
-      const b = e.target.closest('button[data-cat]'); if(!b) return;
-      [...filtersEl.querySelectorAll('button')].forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      render(b.dataset.cat);
-    });
-    btnRefresh.addEventListener('click', ()=>{
-      NEWS.sort(()=>Math.random()-0.5);
-      const cat = filtersEl.querySelector('button.active')?.dataset.cat || 'all';
-      render(cat);
-      btnRefresh.disabled=true; setTimeout(()=>btnRefresh.disabled=false,500);
-    });
-    render('all');
-  })();
-
-  // ===== small helpers for Home (localStorage demo) =====
-  (function(){
-    const $ = id=>document.getElementById(id);
-    ['riskPct','posUSDT','apiKey','apiSec'].forEach(k=>{
-      const v = localStorage.getItem('jk_'+k) || '';
-      if($(k)) $(k).value = v;
-      $(k)?.addEventListener('input', e=>localStorage.setItem('jk_'+k, e.target.value));
-    });
-    $('pwShow')?.addEventListener('click', ()=>{
-      const i = $('apiSec'); i.type = (i.type==='password'?'text':'password');
-    });
-    $('btnSaveKeys')?.addEventListener('click', ()=>{
-      alert('Saved locally ✔');
-    });
-  })();
-  </script>
+// first load
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(location.hash.replace('#','')==='market') tryMountOnVisible();
+});
+</script>
 </body>
 </html>
