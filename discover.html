@@ -1,26 +1,45 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>JK Trading Hub — Discover</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
+/* === DISCOVER NEWS (JK) =============================== */
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
 
-  <nav class="tabs">
-    <a class="tab" href="index.html">Home</a>
-    <a class="tab" href="market.html">Market</a>
-    <a class="tab" href="trade.html">Trade</a>
-    <a class="tab" href="discover.html">Discover</a>
-    <a class="tab" href="account.html">My Account</a>
-  </nav>
-  <script>(function(){var f=location.pathname.split('/').pop()||'discover.html';document.querySelectorAll('.tabs .tab').forEach(a=>{if(a.getAttribute('href')===f)a.classList.add('active');});})();</script>
+.news-item {
+  background: #1e1e1e;            /* dark card */
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.06);  /* thin border */
+}
 
-  <!-- Your discover content -->
-  <section class="card section">
-    <h3>Discover</h3>
-    <p class="small">News / screeners / watchlists yahan dal lo.</p>
-  </section>
+.news-item h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.07rem;
+  line-height: 1.35;
+}
 
-</body>
-</html>
+.news-item p {
+  margin: 0 0 0.6rem;
+  color: #bdbdbd;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: .2px;
+  color: #fff;
+}
+
+.tag.crypto { background: #2a9d8f; }
+.tag.commodity { background: #e9c46a; color:#111; }
+
+/* Optional: small screen tweaks */
+@media (max-width: 480px) {
+  .news-item { padding: .9rem; border-radius: 10px; }
+  .news-item h3 { font-size: 1rem; }
+}
